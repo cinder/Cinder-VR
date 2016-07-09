@@ -1,0 +1,15 @@
+# Cinder-VR Libraries
+lib/
+
+# Windows cruft
+*.suo
+*.ncb
+*.sdf
+*.VC.opendb
+*.VC.db
+*.opensdf
+Debug/
+Release/
+Debug_ANGLE/
+Release_ANGLE/
+ipch/
