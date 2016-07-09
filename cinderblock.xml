@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<cinder>
+<block
+	name="Cinder-VR"
+	id="org.libcinder.cindervr"
+	author=""
+	license=""
+	summary=""
+	url="https://github.com/cinder/Cinder-VR"
+	git="git://github.com/cinder/Cinder-VR.git"
+	>
+	<supports os="msw"/>
+
+	<includePath>include</includePath>
+	<includePath>/ext/LibOVR/Include</includePath>
+	<includePath>/ext/OpenVR/headers</includePath>
+    
+    <headerPattern>include/cinder/vr/*.h</headerPattern>
+    <headerPattern>include/cinder/vr/oculus/*.h</headerPattern>
+    <headerPattern>include/cinder/vr/openvr/*.h</headerPattern>
+    
+	<platform os="msw">
+		<libraryPath>ext/LibOVR/Lib/Windows/$(Platform)/Release/VS2013</libraryPath>
+		<libraryPath>ext/OpenVR/lib/msw/$(PlatformTarget)</libraryPath>
+		<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset)_d.lib</staticLibrary>
+		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.dll</buildCopy>
+		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.pdb</buildCopy>
+	</platform>
+</block>
+</cinder>
