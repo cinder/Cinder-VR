@@ -22,7 +22,7 @@
 	<platform os="msw">
 		<libraryPath>ext/LibOVR/Lib/Windows/$(Platform)/Release/VS2013</libraryPath>
 		<libraryPath>ext/OpenVR/lib/msw/$(PlatformTarget)</libraryPath>
-		<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset)_d.lib</staticLibrary>
+		<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset).lib</staticLibrary>
 		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.dll</buildCopy>
 		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.pdb</buildCopy>
 	</platform>
