@@ -76,6 +76,15 @@ public:
 	uint32_t							getMipLevels() const { return mMipLevels; }
 	SessionOptions&						setMipLevels( uint32_t value ) { mMipLevels = value; return *this; }
 
+	float								getNearClip() const { return mNearClip; }
+	SessionOptions&						setNearClip( float value ) { mNearClip = value; return *this; }
+
+	float								getFarClip() const { return mFarClip; }
+	SessionOptions&						setFarClip( float value ) { mFarClip = value; return *this; }
+
+	std::pair<float, float>				getClip() const { return std::make_pair( mNearClip, mFarClip ); }
+	SessionOptions&						setClip( float nearClip, float farClip ) { mNearClip = nearClip; mFarClip = farClip; return *this; }
+
 	double								getControllersScanInterval() const { return mControllersScanInterval; }
 	SessionOptions&						setControllersScanInterval( double value ) { mControllersScanInterval = std::max( value, 0.0 ); return *this; }
 
@@ -94,6 +103,9 @@ private:
 
 	uint32_t							mSampleCount = 1;
 	uint32_t							mMipLevels = 1;
+
+	float								mNearClip = 0.1f;
+	float								mFarClip = 100.0f;
 
 	// Default: 0 sec - no scans after initial scan at startup
 	double											mControllersScanInterval = 0.0f;

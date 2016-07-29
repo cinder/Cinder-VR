@@ -50,6 +50,9 @@ namespace cinder { namespace vr { namespace oculus {
 Hmd::Hmd( ci::vr::oculus::Context *context )
 	: ci::vr::Hmd( context ), mContext( context )
 {	
+	mNearClip = context->getSessionOptions().getNearClip();
+	mFarClip = context->getSessionOptions().getFarClip();
+
 /*
 	ovrGraphicsLuid luid; // Not used in OpenGL
 	ci::vr::oculus::VERIFY( ::ovr_Create( &mSession, &luid ) );

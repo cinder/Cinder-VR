@@ -165,6 +165,9 @@ const std::string kControllerShaderFragment =
 Hmd::Hmd( ci::vr::openvr::Context* context )
 	: ci::vr::Hmd( context ), mContext( context )
 {
+	mNearClip = context->getSessionOptions().getNearClip();
+	mFarClip = context->getSessionOptions().getFarClip();
+
 	mVrSystem = context->getVrSystem();
 
 	mRenderModels.resize( ::vr::k_unMaxTrackedDeviceCount );	
@@ -533,8 +536,14 @@ void Hmd::onClipValueChange( float nearClip, float farClip )
 {
 	mNearClip = nearClip;
 	mFarClip = farClip;
+	
+	// Update projection matrices
 	mEyeProjectionMatrix[ci::vr::EYE_LEFT]  = getHmdEyeProjectionMatrix( mVrSystem, ::vr::Eye_Left, mNearClip, mFarClip );
 	mEyeProjectionMatrix[ci::vr::EYE_RIGHT] = getHmdEyeProjectionMatrix( mVrSystem, ::vr::Eye_Right, mNearClip, mFarClip );
+	
+	// Set eye projection matrices
+	mEyeCamera[ci::vr::EYE_LEFT].setProjectionMatrix( mEyeProjectionMatrix[ci::vr::EYE_LEFT] );
+	mEyeCamera[ci::vr::EYE_RIGHT].setProjectionMatrix( mEyeProjectionMatrix[ci::vr::EYE_RIGHT] );
 }
 
 void Hmd::onMonoscopicChange()
