@@ -422,6 +422,7 @@ void Hmd::drawMirrored( const ci::Rectf& r )
 		ci::gl::ScopedDepth scopedDepth( false );
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
+		ci::gl::ScopedBlend scopedBlend{ false };
 		ci::gl::translate( 0.0f, r.getHeight(), 0.0f );
 		ci::gl::scale( 1, -1 );
 		ci::gl::draw( mMirrorFbo->getColorTexture(), r );
