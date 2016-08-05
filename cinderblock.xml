@@ -20,9 +20,14 @@
     <headerPattern>include/cinder/vr/openvr/*.h</headerPattern>
     
 	<platform os="msw">
+		<platform config="debug">
+			<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset)_d.lib</staticLibrary>
+		</platform>
+		<platform config="release">
+			<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset).lib</staticLibrary>
+		</platform>
 		<libraryPath>ext/LibOVR/Lib/Windows/$(Platform)/Release/VS2013</libraryPath>
 		<libraryPath>ext/OpenVR/lib/msw/$(PlatformTarget)</libraryPath>
-		<staticLibrary>lib/msw/$(PlatformTarget)/cinder-vr-$(PlatformToolset).lib</staticLibrary>
 		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.dll</buildCopy>
 		<buildCopy>ext/OpenVR/bin/msw/$(PlatformTarget)/openvr_api.pdb</buildCopy>
 	</platform>
