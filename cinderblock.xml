@@ -12,8 +12,8 @@
 	<supports os="msw"/>
 
 	<includePath>include</includePath>
-	<includePath>/ext/LibOVR/Include</includePath>
-	<includePath>/ext/OpenVR/headers</includePath>
+	<includePath>ext/LibOVR/Include</includePath>
+	<includePath>ext/OpenVR/headers</includePath>
     
     <headerPattern>include/cinder/vr/*.h</headerPattern>
     <headerPattern>include/cinder/vr/oculus/*.h</headerPattern>
