@@ -131,10 +131,11 @@ void Context::updatePoseData()
 		}
 
 		if( ( ci::vr::Controller::HAND_UNKNOWN != handId ) && ( mPoses[deviceIndex].bPoseIsValid ) && mViveControllers[handId]->isEventsEnabled() ) {
-			const ci::mat4& originMatrix = mHmd->getOriginMatrix();
+			const ci::mat4& inverseLookMatrix = mHmd->getInverseLookMatrix();
+			const ci::mat4& inverseOriginMatrix = mHmd->getInverseOriginMatrix();
 			const ci::mat4& deviceToTracking = getDeviceToTrackingMatrix( deviceIndex );
 			const ci::mat4& trackingToDevice = getDeviceToTrackingMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
-			mViveControllers[handId]->processControllerPose( originMatrix, deviceToTracking, trackingToDevice );
+			mViveControllers[handId]->processControllerPose( inverseLookMatrix, inverseOriginMatrix, deviceToTracking, trackingToDevice );
 		}
 	}
 }

@@ -252,14 +252,16 @@ void Controller::processAxes( const ::vr::VRControllerState_t& state )
 	}
 }
 
-void Controller::processControllerPose( const ci::mat4& originMatrix, const ci::mat4& deviceToTrackingMatrix, const ci::mat4& trackingToDeviceMatrix )
+void Controller::processControllerPose( const ci::mat4& inverseLookMatrix, const ci::mat4& inverseOriginMatrix, const ci::mat4& deviceToTrackingMatrix, const ci::mat4& trackingToDeviceMatrix )
 {
+	// Ray components
 	mDeviceToTrackingMatrix = deviceToTrackingMatrix;
 	mTrackingToDeviceMatrix = trackingToDeviceMatrix;
-	ci::mat4 inverseOriginMatrix = glm::affineInverse( originMatrix );
-	ci::mat4 coordSysMatrix = inverseOriginMatrix * mDeviceToTrackingMatrix;
+	ci::mat4 coordSysMatrix = inverseLookMatrix * inverseOriginMatrix * mDeviceToTrackingMatrix;
+	//ci::mat4 coordSysMatrix = inverseOriginMatrix * mDeviceToTrackingMatrix;
 	ci::vec3 p0 = ci::vec3( coordSysMatrix * ci::vec4( 0, 0, 0, 1 ) );
 	ci::vec3 dir = ci::vec3( coordSysMatrix * ci::vec4( 0, 0, -1, 0 ) );
+	// Input ray
 	mInputRay = ci::Ray( p0, dir );
 }
 
