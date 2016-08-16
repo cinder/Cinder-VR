@@ -86,7 +86,7 @@ protected:
 	virtual void							processButtons( const ::vr::VRControllerState_t& state );
 	virtual void							processTriggers( const ::vr::VRControllerState_t& state );
 	virtual void							processAxes( const ::vr::VRControllerState_t& state );
-	virtual void							processControllerPose( const ci::mat4& originMatrix, const ci::mat4& deviceToTrackingMatrix, const ci::mat4& trackingToDeviceMatrix );
+	virtual void							processControllerPose( const ci::mat4& inverseLookMatrix, const ci::mat4& inverseOriginMatrix, const ci::mat4& deviceToTrackingMatrix, const ci::mat4& trackingToDeviceMatrix );
 
 	bool									mEventsEnabled = false;
 	bool									isEventsEnabled() const { return mEventsEnabled; }

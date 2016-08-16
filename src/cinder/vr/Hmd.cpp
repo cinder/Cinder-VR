@@ -72,31 +72,6 @@ void Hmd::enableMonoscopic( bool enabled )
 	onMonoscopicChange();
 }
 
-/* DEPRECATED:
-void Hmd::setLookAt( const ci::vec3 &position, const ci::vec3 &target )
-{
-	mOriginPosition = position;
-	mOriginViewDirection = ci::normalize( target - position );
-	mOriginOrientation = ci::quat( glm::toQuat( alignZAxisWithTarget( -mOriginViewDirection, mOriginWorldUp ) ) );
-
-	ci::vec3 mW = -normalize( mOriginViewDirection );
-	ci::vec3 mU = ci::rotate( mOriginOrientation, ci::vec3( 1, 0, 0 ) );
-	ci::vec3 mV = ci::rotate( mOriginOrientation, ci::vec3( 0, 1, 0 ) );	
-	ci::vec3 d  = ci::vec3( - dot( mOriginPosition, mU ), - dot( mOriginPosition, mV ), - dot( mOriginPosition, mW ) );
-
-	mat4 &m = mOriginMatrix;
-	m[0][0] = mU.x; m[1][0] = mU.y; m[2][0] = mU.z; m[3][0] =  d.x;
-	m[0][1] = mV.x; m[1][1] = mV.y; m[2][1] = mV.z; m[3][1] =  d.y;
-	m[0][2] = mW.x; m[1][2] = mW.y; m[2][2] = mW.z; m[3][2] =  d.z;
-	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
-}
-*/
-
-void Hmd::setClip( float nearClip, float farClip )
-{
-	onClipValueChange( nearClip, farClip );
-}
-
 const ci::vr::CameraEye& Hmd::getEyeCamera(ci::vr::Eye eye) const
 {
 	return mEyeCamera[eye];
@@ -147,7 +122,8 @@ void Hmd::setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 		break;
 
 		case ci::vr::COORD_SYS_WORLD: {
-			ci::gl::multViewMatrix( mOriginMatrix );
+			ci::gl::multModelMatrix( mOriginMatrix );
+			ci::gl::multModelMatrix( mLookMatrix );
 		}
 		break;
 
@@ -160,6 +136,43 @@ void Hmd::setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 		}
 		break;
 	}
+}
+
+void Hmd::setClip( float nearClip, float farClip )
+{
+	onClipValueChange( nearClip, farClip );
+}
+
+//void Hmd::setLookAt( const ci::vec3 &position, const ci::vec3 &target, const ci::vec3 &worldUp )
+//{
+//	mLookPosition = position;
+//	mLookViewDirection = ci::normalize( target - position );
+//	mLookWorldUp = worldUp;
+//	mLookOrientation = ci::quat( glm::toQuat( alignZAxisWithTarget( -mLookViewDirection, mLookWorldUp ) ) );
+//
+//	ci::vec3 w = -normalize( mLookViewDirection );
+//	ci::vec3 u = ci::rotate( mLookOrientation, ci::vec3( 1, 0, 0 ) );
+//	ci::vec3 v = ci::rotate( mLookOrientation, ci::vec3( 0, 1, 0 ) );	
+//	ci::vec3 d = ci::vec3( - dot( mLookPosition, u ), - dot( mLookPosition, v ), - dot( mLookPosition, w ) );
+//
+//	mat4 &m = mLookMatrix;
+//	m[0][0] =  u.x; m[1][0] =  u.y; m[2][0] =  u.z; m[3][0] =  d.x;
+//	m[0][1] =  v.x; m[1][1] =  v.y; m[2][1] =  v.z; m[3][1] =  d.y;
+//	m[0][2] =  w.x; m[1][2] =  w.y; m[2][2] =  w.z; m[3][2] =  d.z;
+//	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
+//}
+
+void Hmd::setLookAt( const ci::vec3 &positon )
+{
+	mLookPosition = positon + vec3( 0, 0, getSessionOptions().getOriginOffset().z );
+	
+	mat4 &m = mLookMatrix;
+	m[0][0] = 1.0f; m[1][0] = 0.0f; m[2][0] = 0.0f; m[3][0] = -mLookPosition.x;
+	m[0][1] = 0.0f; m[1][1] = 1.0f; m[2][1] = 0.0f; m[3][1] = -mLookPosition.y;
+	m[0][2] = 0.0f; m[1][2] = 0.0f; m[2][2] = 1.0f; m[3][2] = -mLookPosition.z;
+	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
+
+	mInverseLookMatrix = glm::affineInverse( mLookMatrix );
 }
 
 }} // namespace cinder::vr

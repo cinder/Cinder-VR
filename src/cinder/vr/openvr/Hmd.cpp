@@ -623,14 +623,20 @@ void Hmd::calculateOriginMatrix()
 
 	switch( getSessionOptions().getOriginMode() ) {
 		case ci::vr::ORIGIN_MODE_OFFSETTED: {
+			// Rotation matrix
 			rotationMatrix = ci::mat4();
-			positionMatrix = ci::translate( offset );
+			// Position matrix
+			mOriginPosition = offset;
+			positionMatrix = ci::translate( mOriginPosition );
 		}
 		break;
 
 		case ci::vr::ORIGIN_MODE_HMD_OFFSETTED: {
+			// Rotation matrix
 			rotationMatrix = ci::mat4();
-			positionMatrix = ci::translate( ci::vec3( p0.z ) + offset );
+			// Position matrix
+			mOriginPosition = ci::vec3( p0.z ) + offset;
+			positionMatrix = ci::translate( mOriginPosition );
 		}
 		break;
 
@@ -648,15 +654,17 @@ void Hmd::calculateOriginMatrix()
 
 	// Compose origin matrix
 	mOriginMatrix = positionMatrix*rotationMatrix;
+	mInverseOriginMatrix = glm::affineInverse( mOriginMatrix );
 }
 
 void Hmd::calculateInputRay()
 {
+	// Ray components
 	ci::mat4 deviceToTrackingMatrix = mContext->getDeviceToTrackingMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
-	ci::mat4 inverseOriginMatrix = glm::affineInverse( mOriginMatrix );
-	ci::mat4 coordSysMatrix = inverseOriginMatrix * deviceToTrackingMatrix;
+	ci::mat4 coordSysMatrix = mInverseLookMatrix * mInverseOriginMatrix * deviceToTrackingMatrix;
 	ci::vec3 p0 = ci::vec3( coordSysMatrix * ci::vec4( 0, 0, 0, 1 ) );
 	ci::vec3 dir = ci::vec3( coordSysMatrix * ci::vec4( 0, 0, -1, 0 ) );
+	// Input ray
 	mInputRay = ci::Ray( p0, dir );
 }
 

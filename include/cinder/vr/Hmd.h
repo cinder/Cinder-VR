@@ -88,12 +88,18 @@ public:
 	ci::mat4							getEyeViewProjectionMatrix( ci::vr::Eye eye ) const;
 	virtual ci::Area					getEyeViewport( ci::vr::Eye eyeType ) const = 0;
 
-	virtual void						setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode );
-	// DEPRECATED: virtual void			setLookAt( const ci::vec3 &position, const ci::vec3 &target );
+	////! Sets the look at position and target. Parameters are in world coordinate.
+	//virtual void						setLookAt( const ci::vec3 &position, const ci::vec3 &target, const ci::vec3& worldUp = ci::vec3( 0, 1, 0 ) );
+	//! Sets the look at position using current look view direction and up vector
+	virtual void						setLookAt( const ci::vec3 &position );
 	virtual void						setClip( float nearClip, float farClip );
+	virtual void						setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode );
 
 	virtual void						calculateOriginMatrix() {}
 	const ci::mat4&						getOriginMatrix() const { return mOriginMatrix; }
+	const ci::mat4&						getInverseOriginMatrix() const { return mInverseOriginMatrix; }
+	const ci::mat4&						getLookMatrix() const { return mLookMatrix; }
+	const ci::mat4&						getInverseLookMatrix() const { return mInverseLookMatrix; }
 	const ci::mat4&						getDeviceToTrackingMatrix() const { return mDeviceToTrackingMatrix; }
 	const ci::mat4&						getTrackingToDeviceMatrix() const { return mTrackingToDeviceMatrix; }
 	virtual void						calculateInputRay() {}
@@ -120,7 +126,15 @@ protected:
 	ci::vec3							mOriginWorldUp = ci::vec3( 0, 1, 0 );
 	ci::quat							mOriginOrientation;
 	ci::mat4							mOriginMatrix;
+	ci::mat4							mInverseOriginMatrix;
 	bool								mOriginInitialized = false;
+
+	ci::vec3							mLookPosition = ci::vec3( 0, 0, 0 );
+	//ci::vec3							mLookViewDirection;
+	//ci::vec3							mLookWorldUp;
+	//ci::quat							mLookOrientation;
+	ci::mat4							mLookMatrix;
+	ci::mat4							mInverseLookMatrix;
 
 	std::vector<ci::vr::Eye>			mEyes;
 	ci::vr::CameraEye					mEyeCamera[ci::vr::EYE_COUNT];
