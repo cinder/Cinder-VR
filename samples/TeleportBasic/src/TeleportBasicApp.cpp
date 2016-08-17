@@ -88,7 +88,13 @@ public:
 	}
 
 	virtual bool intersects( const ci::Ray &ray ) const override {
-		return mBox.intersects( ray );
+		bool result = false;
+		float t0 = std::numeric_limits<float>::min();
+		float t1 = std::numeric_limits<float>::min();
+		if( mBox.intersect( ray, &t0, &t1 ) && ( t0 > 0.0f ) ) {
+			result = true;
+		}
+		return result;
 	}
 
 	virtual void draw() {
@@ -188,36 +194,17 @@ void TeleportBasicApp::initShapes( const gl::GlslProgRef &shader )
 	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  -4, -0.0625f,  -4 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   4, -0.0625f,  -4 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   0, -0.0625f, -10 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  -4, -0.0625f,  -4 ) + vec3( 0, 1, -12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   4, -0.0625f,  -4 ) + vec3( 0, 1, -12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  -4, -0.0625f,  -4 ) + vec3( 0, 5, -12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   4, -0.0625f,  -4 ) + vec3( 0, 8, -12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  -8, -0.0625f,   3 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   8, -0.0625f,   3 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3( -16, -0.0625f,   3 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  16, -0.0625f,   3 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3( -16, -0.0625f,   3 ) + vec3( 0, 0.5f, -9 ), vec3( 4, 0.125f, 4 ), shader ) ) );
-	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  16, -0.0625f,   3 ) + vec3( 0, 0.5f, -9 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3( -16, -0.0625f,   3 ) + vec3( 0, 4, 0 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  16, -0.0625f,   3 ) + vec3( 0, 4, 0 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3( -16, -0.0625f,   3 ) + vec3( 0, 6.0f, -9 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  16, -0.0625f,   3 ) + vec3( 0, 2.5f, -9 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 
-/*
-	int m = 8;
-	int n = 4;
-	float dx = 2.5f;
-	float dy = 2.0f;
-	float x1 = -( ( m - 1 ) * dx ) / 2.0f;
-	float y1 = ( n * dy ) - ( dy / 2.0f );
-	for( int j = 0; j < n; ++j ) {
-		for( int i = 0; i < m; ++i ) {
-			float x = i * dx + x1;
-			float y = -( j * dy ) + y1;
-			float z = -4.0f;
-			if( i & 1 ) {
-				mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( x, y, z ), vec3( 1.0f ), shader ) ) );
-			}
-			else {
-				mShapes.push_back( UiIntersectablePtr( new UiSphere( vec3( x, y, z ), 0.80f, shader ) ) );
-			}
-		}
-	}
-*/
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(  -4, -0.0625f,   4 ) + vec3( 0, 8,  12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
+	mShapes.push_back( UiIntersectablePtr( new UiBox( vec3( 0, -0.001f, 0 ) + vec3(   4, -0.0625f,   4 ) + vec3( 0, 5,  12 ), vec3( 4, 0.125f, 4 ), shader ) ) );
 }
 
 void TeleportBasicApp::setup()
@@ -240,7 +227,7 @@ void TeleportBasicApp::setup()
 		mVrContext = ci::vr::beginSession( 
 			ci::vr::SessionOptions()
 				.setTrackingOrigin( ci::vr::TRACKING_ORIGIN_SEATED )
-				.setOriginOffset( vec3( 0, -1, 0 ) )
+				.setOriginOffset( vec3( 0, -1, -3 ) )
 				.setControllersScanInterval( 0.25f )
 				.setControllerConnected( std::bind( &TeleportBasicApp::onControllerConnect, this, std::placeholders::_1 ) )
 				.setControllerDisconnected( std::bind( &TeleportBasicApp::onControllerDisconnect, this, std::placeholders::_1 ) )
@@ -267,22 +254,6 @@ void TeleportBasicApp::setup()
 
 void TeleportBasicApp::mouseDown(MouseEvent event)
 {
-	if( ( nullptr == mHmd ) || mShapes.empty() ) {
-		return;
-	}
-
-	while( true ) {
-		uint32_t value = randInt( mShapes.size() );
-		if( mShapeIndex != value ) {
-			mShapeIndex = value;
-			break;
-		}
-	}
-
-	//vec3 position = vec3( 0, 0, 1 ); 
-	vec3 position = mShapes[mShapeIndex]->getPosition();
-	CI_LOG_I( "position: " << position );
-	mHmd->setLookAt( position );
 }
 
 void TeleportBasicApp::onControllerConnect(const ci::vr::Controller* controller)
@@ -347,22 +318,19 @@ void TeleportBasicApp::onControllerDisconnect( const ci::vr::Controller* control
 
 void TeleportBasicApp::onButtonDown( const ci::vr::Controller::Button *button )
 {
-	const ci::vr::Controller *controller = button->getController();
-	for( auto& shape : mShapes ) {
-		if( ci::vr::API_OCULUS == mVrContext->getApi() ) {
-			const auto& ir = mHmd->getInputRay();
-			if( shape->intersects( ir ) ) {
-				shape->setSelected( ! shape->getSelected() );
-			}
+	uint32_t shapdeIndex = mShapeIndex;
+	for( uint32_t i = 0; i < mShapes.size(); ++i ) {
+		auto& shape = mShapes[i];
+		if( shape->intersects( mHmd->getInputRay() ) ) {
+			shapdeIndex = i;
+			break;
 		}
-		else if( ci::vr::API_OPENVR == mVrContext->getApi() ) {
-			if( controller->hasInputRay() ) {
-				const auto& ir = controller->getInputRay();
-				if( shape->intersects( ir ) ) {
-					shape->setSelected( ! shape->getSelected() );
-				}
-			}
-		}
+	}
+
+	if( shapdeIndex != mShapeIndex ) {
+		mShapeIndex = shapdeIndex;
+		vec3 position = mShapes[mShapeIndex]->getPosition();
+		mHmd->setLookAt( position );
 	}
 }
 
@@ -378,27 +346,9 @@ void TeleportBasicApp::update()
 		mRecalcOrigin = true;
 	}
 
-	for( auto& sphere : mShapes ) {
-		bool focused1 = false;
-		bool focused2 = false;
-		bool focused3 = false; 
-
-		if( mController1 && mController1->hasInputRay() ) {
-			const auto& ir = mController1->getInputRay();
-			focused1 = sphere->intersects( ir );
-		}
-
-		if( mController2 && mController2->hasInputRay() ) {
-			const auto& ir = mController2->getInputRay();
-			focused2 = sphere->intersects( ir );
-		}
-
-		if( ci::vr::API_OCULUS == mVrContext->getApi() ) {
-			const auto& ir = mHmd->getInputRay();
-			focused3 = sphere->intersects( ir );
-		}
-
-		sphere->setFocused( focused1 || focused2 || focused3 );
+	for( auto& shape : mShapes ) {
+		bool focused = shape->intersects( mHmd->getInputRay() );
+		shape->setFocused( focused );
 	}
 }
 
