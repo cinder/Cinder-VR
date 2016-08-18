@@ -60,8 +60,8 @@ public:
 		MIRROR_MODE_NONE = 0,
 		MIRROR_MODE_STEREO,
 		MIRROR_MODE_UNDISTORTED_STEREO,
-		MIRROR_MODE_UNDISTROTED_MONO_LEFT,
-		MIRROR_MODE_UNDISTROTED_MONO_RIGHT,
+		MIRROR_MODE_UNDISTORTED_MONO_LEFT,
+		MIRROR_MODE_UNDISTORTED_MONO_RIGHT,
 	};
 
 	virtual ~Hmd();
@@ -81,9 +81,9 @@ public:
 	//! Returns the full field of view (in degrees) covered by the HMD
 	virtual float						getFullFov() const = 0;
 
-	Hmd::MirrorMode						getMirrorMode() const { return mMirroMode; }
-	void								setMirrorMode( Hmd::MirrorMode mirrorMode ) { mMirroMode = mirrorMode; }
-	bool								isMirrored() const { return Hmd::MirrorMode::MIRROR_MODE_NONE != mMirroMode; }
+	Hmd::MirrorMode						getMirrorMode() const { return mMirrorMode; }
+	void								setMirrorMode( Hmd::MirrorMode mirrorMode ) { mMirrorMode = mirrorMode; }
+	bool								isMirrored() const { return Hmd::MirrorMode::MIRROR_MODE_NONE != mMirrorMode; }
 	bool								isMirroredUndistorted() const;
 	
 	bool								isMonoscopic() const { return mIsMonoscopic; }
@@ -127,7 +127,7 @@ public:
 protected:
 	Hmd( ci::vr::Context* context );
 
-	Hmd::MirrorMode						mMirroMode = Hmd::MirrorMode::MIRROR_MODE_STEREO;
+	Hmd::MirrorMode						mMirrorMode = Hmd::MirrorMode::MIRROR_MODE_STEREO;
 	bool								mIsMonoscopic = false;
 
 	ci::ivec2							mRenderTargetSize = ci::ivec2( 0 );

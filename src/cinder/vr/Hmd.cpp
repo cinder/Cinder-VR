@@ -50,6 +50,7 @@ Hmd::Hmd( ci::vr::Context* context )
 	mEyes.push_back( ci::vr::EYE_RIGHT );
 	mEyeCamera[ci::vr::EYE_LEFT] = ci::vr::CameraEye( ci::vr::EYE_LEFT );
 	mEyeCamera[ci::vr::EYE_RIGHT] = ci::vr::CameraEye( ci::vr::EYE_RIGHT );
+	mHmdCamera = ci::vr::CameraEye( ci::vr::EYE_HMD );
 }
 
 Hmd::~Hmd()
@@ -68,9 +69,9 @@ const ci::vr::SessionOptions& Hmd::getSessionOptions() const
 
 bool Hmd::isMirroredUndistorted() const
 {
-	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirroMode ) ||
-		   ( Hmd::MIRROR_MODE_UNDISTROTED_MONO_LEFT == mMirroMode ) ||
-		   ( Hmd::MIRROR_MODE_UNDISTROTED_MONO_RIGHT == mMirroMode );
+	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirrorMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTORTED_MONO_LEFT == mMirrorMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTORTED_MONO_RIGHT == mMirrorMode );
 }
 
 void Hmd::enableMonoscopic(bool enabled)

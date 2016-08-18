@@ -417,6 +417,7 @@ void Hmd::updatePoseData()
 		const auto& hmdMat = mContext->getTrackingToDeviceMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
 		mEyeCamera[ci::vr::EYE_LEFT].setHmdMatrix( hmdMat );
 		mEyeCamera[ci::vr::EYE_RIGHT].setHmdMatrix( hmdMat );
+		mHmdCamera.setHmdMatrix( hmdMat );
 
 		mDeviceToTrackingMatrix = mContext->getDeviceToTrackingMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
 		mTrackingToDeviceMatrix = mContext->getTrackingToDeviceMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
@@ -618,6 +619,18 @@ void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 			ci::gl::clear( mClearColor );
 		}
 		break;
+
+		case ci::vr::EYE_HMD: {
+			auto viewport = ci::gl::getViewport();
+			auto area = ci::Area( viewport.first.x, viewport.first.y, viewport.first.x + viewport.second.x, viewport.first.y + viewport.second.y );
+			float width = area.getWidth();
+			float height = area.getHeight();
+			float aspect = width / height;
+			ci::mat4 mat = glm::perspectiveFov( toRadians( getFullFov() / aspect ), width, height, mNearClip, mFarClip );
+			mHmdCamera.setProjectionMatrix( mat );
+			ci::gl::clear( mClearColor );
+		}
+		break;
 	}
 
 	setMatricesEye( eye, eyeMatrixMode );
@@ -697,35 +710,84 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 
 	ci::gl::ScopedDepthTest scopedDepthTest( false );
 	ci::gl::ScopedModelMatrix scopedModelMatrix;
-	ci::gl::ScopedGlslProg scopedShader( mDistortionShader );
+	ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 
-	float w = r.getWidth() / 2.0f;
-	float h = r.getHeight() / 2.0f;
+	switch( mMirrorMode ) {
+		// Default to stereo mirroring
+		default:
+		case Hmd::MirrorMode::MIRROR_MODE_STEREO: {
+			ci::gl::ScopedGlslProg scopedShader( mDistortionShader );
 
-	// Offset and the scale to fit the rect
-	ci::mat4 m = ci::mat4();
-	m[0][0] =  w;
-	m[1][1] = -h;
-	m[3][0] =  w + r.x1;
-	m[3][1] =  h + r.y1;
-	ci::gl::multModelMatrix( m );
+			float w = r.getWidth() / 2.0f;
+			float h = r.getHeight() / 2.0f;
 
-	// Render left eye
-	{
-		auto resolvedTex = mRenderTargetLeft->getColorTexture();
-		resolvedTex->bind( kTexUnit );
-		mDistortionShader->uniform( "uTex0", kTexUnit );
-		mDistortionBatch->draw( 0, mDistortionIndexCount / 2 );
-		resolvedTex->unbind( kTexUnit );
-	}
+			// Offset and the scale to fit the rect
+			ci::mat4 m = ci::mat4();
+			m[0][0] =  w;
+			m[1][1] = -h;
+			m[3][0] =  w + r.x1;
+			m[3][1] =  h + r.y1;
+			ci::gl::multModelMatrix( m );
 
-	// Render right eye
-	{
-		auto resolvedTex = mRenderTargetRight->getColorTexture();
-		resolvedTex->bind( kTexUnit );
-		mDistortionShader->uniform( "uTex0", kTexUnit );
-		mDistortionBatch->draw( mDistortionIndexCount / 2, mDistortionIndexCount / 2 );
-		resolvedTex->unbind( kTexUnit );
+			// Render left eye
+			{
+				auto resolvedTex = mRenderTargetLeft->getColorTexture();
+				resolvedTex->bind( kTexUnit );
+				mDistortionShader->uniform( "uTex0", kTexUnit );
+				mDistortionBatch->draw( 0, mDistortionIndexCount / 2 );
+				resolvedTex->unbind( kTexUnit );
+			}
+
+			// Render right eye
+			{
+				auto resolvedTex = mRenderTargetRight->getColorTexture();
+				resolvedTex->bind( kTexUnit );
+				mDistortionShader->uniform( "uTex0", kTexUnit );
+				mDistortionBatch->draw( mDistortionIndexCount / 2, mDistortionIndexCount / 2 );
+				resolvedTex->unbind( kTexUnit );
+			}
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO: {
+			float width = r.getWidth();
+			float height = r.getHeight();
+			ci::Rectf fittedRect = ci::Rectf( 0, 0, width / 2.0f, height );
+
+			// Render left eye
+			{
+				auto resolvedTex = mRenderTargetLeft->getColorTexture();
+				ci::gl::draw( resolvedTex, fittedRect );
+			}
+
+			// Render right eye
+			{
+				fittedRect += vec2( width / 2.0f, 0 );
+				auto resolvedTex = mRenderTargetRight->getColorTexture();
+				ci::gl::draw( resolvedTex, fittedRect );
+			}
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_LEFT: {
+			auto tex = mRenderTargetLeft->getColorTexture();
+			float width = static_cast<float>( tex->getWidth() );
+			float height = static_cast<float>( tex->getHeight() );
+			auto texRect = ci::Rectf( 0, 0, width, height );
+			auto fittedRect = r.getCenteredFit( texRect, true );
+			ci::gl::draw( tex, Area( fittedRect ), r );	
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_RIGHT: {
+			auto tex = mRenderTargetRight->getColorTexture();
+			float width = static_cast<float>( tex->getWidth() );
+			float height = static_cast<float>( tex->getHeight() );
+			auto texRect = ci::Rectf( 0, 0, width, height );
+			auto fittedRect = r.getCenteredFit( texRect, true );
+			ci::gl::draw( tex, Area( fittedRect ), r );
+		}
+		break;
 	}
 }
 

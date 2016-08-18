@@ -276,7 +276,7 @@ void TeleportBasicApp::keyDown( KeyEvent event )
 		case '3': {
 			mCyclopsMirroring = false;
 			if( mHmd ) {
-				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_LEFT );
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_LEFT );
 			}
 		}
 		break;
@@ -284,7 +284,7 @@ void TeleportBasicApp::keyDown( KeyEvent event )
 		case '4': {
 			mCyclopsMirroring = false;
 			if( mHmd ) {
-				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_RIGHT );
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_RIGHT );
 			}
 		}
 		break;

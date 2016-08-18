@@ -462,7 +462,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 		ci::gl::ScopedDepth scopedDepth( false );
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
-		switch( mMirroMode ) {
+		switch( mMirrorMode ) {
 			// Default to stereo mirroring
 			default:
 			case Hmd::MirrorMode::MIRROR_MODE_STEREO: {
@@ -479,7 +479,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 			}
 			break;
 
-			case Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_LEFT: {
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_LEFT: {
 				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
 				float width = static_cast<float>( tex->getWidth() ) / 2.0f;
 				float height = static_cast<float>( tex->getHeight() );
@@ -489,7 +489,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 			}
 			break;
 
-			case Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_RIGHT: {
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_RIGHT: {
 				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
 				float width = static_cast<float>( tex->getWidth() ) / 2.0f;
 				float height = static_cast<float>( tex->getHeight() );
