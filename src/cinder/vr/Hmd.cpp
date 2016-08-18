@@ -66,15 +66,20 @@ const ci::vr::SessionOptions& Hmd::getSessionOptions() const
 	return mContext->getSessionOptions();
 }
 
-void Hmd::enableMonoscopic( bool enabled )
+bool Hmd::isMirroredUndistorted() const
+{
+	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirroMode );
+}
+
+void Hmd::enableMonoscopic(bool enabled)
 {
 	mIsMonoscopic = enabled;
 	onMonoscopicChange();
 }
 
-const ci::vr::CameraEye& Hmd::getEyeCamera(ci::vr::Eye eye) const
+const ci::vr::CameraEye& Hmd::getEyeCamera( ci::vr::Eye eye ) const
 {
-	return mEyeCamera[eye];
+	return ( ci::vr::EYE_HMD == eye ) ? mHmdCamera : mEyeCamera[eye];
 }
 
 void Hmd::updateElapsedFrames()
@@ -138,7 +143,7 @@ void Hmd::setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 	}
 }
 
-void Hmd::setClip( float nearClip, float farClip )
+void Hmd::setClip(float nearClip, float farClip)
 {
 	onClipValueChange( nearClip, farClip );
 }
@@ -190,6 +195,36 @@ void Hmd::setLookAt( const ci::vec3 &position )
 	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
 
 	mInverseLookMatrix = glm::affineInverse( mLookMatrix );
+}
+
+void Hmd::drawMirrored(const ci::Rectf& r, bool handleSubmitFrame )
+{
+	if( ! isMirrored() ) {
+		// Submit the frame if requested even if mirror is turned off
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+		// Bail since mirroring is disabled
+		return;
+	}
+
+	// Undistorted mirroring requires drawing before frame submission to the device
+	if( isMirroredUndistorted() ) {
+		// Draw mirrored
+		drawMirroredImpl( r );
+		// Submit frame
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+	}
+	else {
+		// Submit frame
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+		// Draw mirrored
+		drawMirroredImpl( r );
+	}
 }
 
 }} // namespace cinder::vr

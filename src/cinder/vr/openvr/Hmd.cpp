@@ -54,6 +54,8 @@
 
 namespace cinder { namespace vr { namespace openvr {
 
+const float kFullFov = 110.0f; // Degrees
+
 std::string toString( const ci::mat4& mat ) 
 {
 	const float *m = &(mat[0][0]);
@@ -504,34 +506,6 @@ void Hmd::updateControllerGeometry()
 	}
 }
 
-void Hmd::submitFrame()
-{
-	// Left eye
-	{
-		GLuint resolvedTexId = mRenderTargetLeft->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
-		::vr::VRCompositor()->Submit( ::vr::Eye_Left, &eyeTex );
-	}
-
-	// Right eye
-	{
-		GLuint resolvedTexId = mRenderTargetRight->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
-		::vr::VRCompositor()->Submit( ::vr::Eye_Right, &eyeTex );
-	}
-
-	{
-		// Note from OpenVR sample:
-		//
-		// HACKHACK. From gpuview profiling, it looks like there is a bug where two renders and a present
-		// happen right before and after the vsync causing all kinds of jittering issues. This glFinish()
-		// appears to clear that up. Temporary fix while I try to get nvidia to investigate this problem.
-		// 1/29/2014 mikesart
-		//
-		glFinish();
-	}
-}
-
 void Hmd::onClipValueChange( float nearClip, float farClip )
 {
 	mNearClip = nearClip;
@@ -564,6 +538,7 @@ void Hmd::unbind()
 	mRenderTargetLeft->unbindFramebuffer();
 	mRenderTargetRight->unbindFramebuffer();
 
+/*
 	submitFrame();
 	updatePoseData(); 
 
@@ -571,12 +546,60 @@ void Hmd::unbind()
 	if( pose.bPoseIsValid ) {
 		updateElapsedFrames();
 	}
+*/
+}
+
+void Hmd::submitFrame()
+{
+	// Left eye
+	{
+		GLuint resolvedTexId = mRenderTargetLeft->getColorTexture()->getId();
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::VRCompositor()->Submit( ::vr::Eye_Left, &eyeTex );
+	}
+
+	// Right eye
+	{
+		GLuint resolvedTexId = mRenderTargetRight->getColorTexture()->getId();
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::VRCompositor()->Submit( ::vr::Eye_Right, &eyeTex );
+	}
+
+	{
+		// Note from OpenVR sample:
+		//
+		// HACKHACK. From gpuview profiling, it looks like there is a bug where two renders and a present
+		// happen right before and after the vsync causing all kinds of jittering issues. This glFinish()
+		// appears to clear that up. Temporary fix while I try to get nvidia to investigate this problem.
+		// 1/29/2014 mikesart
+		//
+		glFinish();
+	}
+
+
+	// Update pose data
+	{
+		updatePoseData(); 
+
+		const auto& pose = mContext->getPose( ::vr::k_unTrackedDeviceIndex_Hmd );
+		if( pose.bPoseIsValid ) {
+			updateElapsedFrames();
+		}
+	}
+}
+
+float Hmd::getFullFov() const
+{
+	return kFullFov;
 }
 
 ci::Area Hmd::getEyeViewport( ci::vr::Eye eye ) const
 {
-	ci::Area result;
-	return result;
+	auto size = mRenderTargetSize;
+	if( ci::vr::EYE_LEFT == eye ) {
+		return Area( 0, 0, size.x / 2, size.y );
+	}
+	return Area( ( size.x + 1 ) / 2, 0, size.x, size.y );
 }
 
 void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
@@ -668,7 +691,7 @@ void Hmd::calculateInputRay()
 	mInputRay = ci::Ray( p0, dir );
 }
 
-void Hmd::drawMirrored( const ci::Rectf& r )
+void Hmd::drawMirroredImpl( const ci::Rectf& r )
 {
 	const uint32_t kTexUnit = 0;
 

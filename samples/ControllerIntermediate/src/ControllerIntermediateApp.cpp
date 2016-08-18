@@ -468,6 +468,9 @@ void ControllerIntermediateApp::draw()
 		gl::viewport( getWindowSize() );
 		gl::setMatricesWindow( getWindowSize() );
 		mHmd->drawMirrored( getWindowBounds() );
+
+		// Submit frame
+		mHmd->submitFrame();
 	}
 	else {
 		gl::viewport( getWindowSize() );

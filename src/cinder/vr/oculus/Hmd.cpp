@@ -47,6 +47,8 @@
 
 namespace cinder { namespace vr { namespace oculus {
 
+const float kFullFov = 110.0f; // Degrees
+
 Hmd::Hmd( ci::vr::oculus::Context *context )
 	: ci::vr::Hmd( context ), mContext( context )
 {	
@@ -130,6 +132,7 @@ void Hmd::initializeRenderTarget()
 	if( ! OVR_SUCCESS( result ) ) {
 		throw ci::vr::oculus::Exception( "Couldn't get texture swapchain buffer count" );
 	}
+	CI_LOG_I( "Swapchain buffer count: " << swapChainBufferCount );
 
 	// Shared depth attachment
 	ci::gl::Texture::Format depthFmt = ci::gl::Texture::Format();
@@ -213,33 +216,6 @@ void Hmd::destroyMirrorTexture()
 	}
 }
 
-
-void Hmd::submitFrame()
-{
-	// Set up positional data.
-	ovrViewScaleDesc viewScaleDesc;
-	viewScaleDesc.HmdSpaceToWorldScaleInMeters = 1.0f;
-
-	mBaseLayer.Header.Type = ovrLayerType_EyeFov;
-	mBaseLayer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
-	mBaseLayer.SensorSampleTime = mSensorSampleTime;
-	for( auto eye : getEyes() ) {
-		auto area = getEyeViewport( eye );
-		viewScaleDesc.HmdToEyeOffset[eye]	= mEyeViewOffset[eye];
-		mBaseLayer.Fov[eye]					= mEyeRenderDesc[eye].Fov;
-		mBaseLayer.RenderPose[eye]			= mEyeRenderPose[eye];
-		mBaseLayer.Viewport[eye]			= { { area.x1, area.y1 }, { area.getWidth(), area.getHeight() } };
-	}
-	mBaseLayer.ColorTexture[0] = mTextureSwapChain;
-	mBaseLayer.ColorTexture[1] = NULL;
-	
-	ovrLayerHeader* layers = &mBaseLayer.Header;
-	auto result = ::ovr_SubmitFrame( mSession, mFrameIndex, &viewScaleDesc, &layers, 1 );
-	mIsVisible = ( result == ovrSuccess );
-
-	++mFrameIndex;
-}
-
 void Hmd::onClipValueChange( float nearClip, float farClip )
 {
 	mNearClip = nearClip;
@@ -273,6 +249,20 @@ void Hmd::bind()
 		mDeviceToTrackingMatrix = ci::vr::oculus::fromOvr( trackingState.HeadPose.ThePose );
 		// Calculate tracking to device matrix
 		mTrackingToDeviceMatrix = ci::inverse( mDeviceToTrackingMatrix );
+
+		// Update HMD camera
+		{
+			const auto& hmdPose = trackingState.HeadPose.ThePose;
+			// View matrix
+			ci::vec3 position = ci::vr::oculus::fromOvr( hmdPose.Position );
+			ci::quat orientation = ci::vr::oculus::fromOvr( hmdPose.Orientation );
+			ci::mat4 rotMat = glm::mat4_cast( orientation );
+			ci::mat4 posMat = glm::translate( position );
+			ci::mat4 viewMatrix = posMat*rotMat;
+			viewMatrix = ci::inverse( viewMatrix );
+			mHmdCamera.setViewMatrix( viewMatrix );
+			// Projection matrix will be set in enableEye
+		}
 	}
 	
 	// Calculate origin matrix
@@ -323,25 +313,75 @@ void Hmd::unbind()
 		::ovr_CommitTextureSwapChain( mSession, mTextureSwapChain );
 	}
 
+	/*
 	submitFrame();
 
 	if( mIsVisible ) {
 		updateElapsedFrames();
 	}
+	*/
 }
 
-ci::Area Hmd::getEyeViewport( ci::vr::Eye eyeType ) const
+void Hmd::submitFrame()
+{
+	// Set up positional data.
+	ovrViewScaleDesc viewScaleDesc;
+	viewScaleDesc.HmdSpaceToWorldScaleInMeters = 1.0f;
+
+	mBaseLayer.Header.Type = ovrLayerType_EyeFov;
+	mBaseLayer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
+	mBaseLayer.SensorSampleTime = mSensorSampleTime;
+	for( auto eye : getEyes() ) {
+		auto area = getEyeViewport( eye );
+		viewScaleDesc.HmdToEyeOffset[eye]	= mEyeViewOffset[eye];
+		mBaseLayer.Fov[eye]					= mEyeRenderDesc[eye].Fov;
+		mBaseLayer.RenderPose[eye]			= mEyeRenderPose[eye];
+		mBaseLayer.Viewport[eye]			= { { area.x1, area.y1 }, { area.getWidth(), area.getHeight() } };
+	}
+	mBaseLayer.ColorTexture[0] = mTextureSwapChain;
+	mBaseLayer.ColorTexture[1] = NULL;
+	
+	ovrLayerHeader* layers = &mBaseLayer.Header;
+	auto result = ::ovr_SubmitFrame( mSession, mFrameIndex, &viewScaleDesc, &layers, 1 );
+	mIsVisible = ( result == ovrSuccess );
+
+	++mFrameIndex;
+
+	// Update frame index
+	if( mIsVisible ) {
+		updateElapsedFrames();
+	}
+}
+
+float Hmd::getFullFov() const
+{
+	return kFullFov;
+}
+
+ci::Area Hmd::getEyeViewport( ci::vr::Eye eye ) const
 {
 	auto size = mRenderTargetSize;
-	if( ci::vr::EYE_LEFT == eyeType ) {
-		return Area{ 0, 0, size.x / 2, size.y };
+	if( ci::vr::EYE_LEFT == eye ) {
+		return Area( 0, 0, size.x / 2, size.y );
 	}
-	return Area{ ( size.x + 1 ) / 2, 0, size.x, size.y };
+	else if( ci::vr::EYE_RIGHT == eye ) {
+		return Area( ( size.x + 1 ) / 2, 0, size.x, size.y );
+	}
+	return Area( 0, 0, 0, 0 );
 }
 
 void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 {
-	auto area = getEyeViewport( eye );
+	ci::Area area = getEyeViewport( eye );
+	if( ci::vr::EYE_HMD == eye ) {
+		auto viewport = ci::gl::getViewport();
+		area = ci::Area( viewport.first.x, viewport.first.y, viewport.first.x + viewport.second.x, viewport.first.y + viewport.second.y );
+		float width = area.getWidth();
+		float height = area.getHeight();
+		float aspect = width / height;
+		ci::mat4 mat = glm::perspectiveFov( toRadians( getFullFov() / aspect ), width, height, mNearClip, mFarClip );
+		mHmdCamera.setProjectionMatrix( mat );
+	}
 	ci::gl::viewport( area.getUL(), area.getSize() );
 
 	setMatricesEye( eye, eyeMatrixMode );
@@ -366,9 +406,6 @@ void Hmd::calculateOriginMatrix()
 	ci::quat q = ci::quat( v0, v1 );
 	rotationMatrix = glm::mat4_cast( q );
 	// Position matrix
-	//float dist = getSessionOptions().getOriginOffset();
-	//ci::vec3 offset = p0 + v1*dist;
-	//positionMatrix = ci::translate( ci::vec3( offset.x, 0, offset.z ) );
 	const ci::vec3& offset = getSessionOptions().getOriginOffset();
 	ci::vec3 w = v1;
 	ci::vec3 v = ci::vec3( 0, 1, 0 );
@@ -419,15 +456,29 @@ void Hmd::calculateInputRay()
 	mInputRay = ci::Ray( p0, dir );
 }
 
-void Hmd::drawMirrored( const ci::Rectf& r )
+void Hmd::drawMirroredImpl( const ci::Rectf& r )
 {
 	if( isMirrored() && mMirrorTexture ) {
 		ci::gl::ScopedDepth scopedDepth( false );
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
-		ci::gl::translate( 0.0f, r.getHeight(), 0.0f );
-		ci::gl::scale( 1, -1 );
-		ci::gl::draw( mMirrorFbo->getColorTexture(), r );
+		switch( mMirroMode ) {
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO: {
+				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
+				auto fittedRect = ci::Rectf( tex->getBounds() ).getCenteredFit( r, false );
+				ci::gl::draw( tex, fittedRect );
+			}
+			break;
+
+			// Default to stereo mirroring
+			case Hmd::MirrorMode::MIRROR_MODE_STEREO:
+			default: {
+				ci::gl::translate( 0.0f, r.getHeight(), 0.0f );
+				ci::gl::scale( 1, -1 );
+				ci::gl::draw( mMirrorFbo->getColorTexture(), r );
+			}
+			break;			
+		}
 	}
 }
 
