@@ -130,9 +130,9 @@ protected:
 	bool								mOriginInitialized = false;
 
 	ci::vec3							mLookPosition = ci::vec3( 0, 0, 0 );
-	//ci::vec3							mLookViewDirection;
-	//ci::vec3							mLookWorldUp;
-	//ci::quat							mLookOrientation;
+	ci::vec3							mLookViewDirection;
+	ci::vec3							mLookWorldUp;
+	ci::quat							mLookOrientation;
 	ci::mat4							mLookMatrix;
 	ci::mat4							mInverseLookMatrix;
 
