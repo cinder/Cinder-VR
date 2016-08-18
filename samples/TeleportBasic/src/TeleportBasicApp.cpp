@@ -258,7 +258,42 @@ void TeleportBasicApp::keyDown( KeyEvent event )
 {
 	switch( event.getChar() ) {
 		case '1': {
-			 mCyclopsMirroring = ! mCyclopsMirroring;
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_STEREO );
+			}
+		}
+		break;
+
+		case '2': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO );
+			}
+		}
+		break;
+
+		case '3': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_LEFT );
+			}
+		}
+		break;
+
+		case '4': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_RIGHT );
+			}
+		}
+		break;
+
+		case '5': {
+			mCyclopsMirroring = true;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_NONE );
+			}
 		}
 		break;
 	}

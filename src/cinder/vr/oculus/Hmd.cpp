@@ -463,21 +463,42 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
 		switch( mMirroMode ) {
-			case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO: {
-				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
-				auto fittedRect = ci::Rectf( tex->getBounds() ).getCenteredFit( r, false );
-				ci::gl::draw( tex, fittedRect );
-			}
-			break;
-
 			// Default to stereo mirroring
-			case Hmd::MirrorMode::MIRROR_MODE_STEREO:
-			default: {
+			default:
+			case Hmd::MirrorMode::MIRROR_MODE_STEREO: {
 				ci::gl::translate( 0.0f, r.getHeight(), 0.0f );
 				ci::gl::scale( 1, -1 );
 				ci::gl::draw( mMirrorFbo->getColorTexture(), r );
 			}
 			break;			
+
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO: {
+				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
+				auto fittedRect = ci::Rectf( tex->getBounds() ).getCenteredFit( r, true );
+				ci::gl::draw( tex, fittedRect );
+			}
+			break;
+
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_LEFT: {
+				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
+				float width = static_cast<float>( tex->getWidth() ) / 2.0f;
+				float height = static_cast<float>( tex->getHeight() );
+				auto texRect = ci::Rectf( 0, 0, width, height );
+				auto fittedRect = r.getCenteredFit( texRect, true );
+				ci::gl::draw( tex, Area( fittedRect ), r );
+			}
+			break;
+
+			case Hmd::MirrorMode::MIRROR_MODE_UNDISTROTED_MONO_RIGHT: {
+				auto tex = mRenderTargets[static_cast<size_t>( mCurrentSwapChainIndex )]->getColorTexture();
+				float width = static_cast<float>( tex->getWidth() ) / 2.0f;
+				float height = static_cast<float>( tex->getHeight() );
+				auto texRect = ci::Rectf( 0, 0, width, height );
+				texRect += ci::vec2( width, 0.0f );
+				auto fittedRect = r.getCenteredFit( texRect, true );
+				ci::gl::draw( tex, Area( fittedRect ), r );
+			}
+			break;
 		}
 	}
 }

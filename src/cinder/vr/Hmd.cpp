@@ -68,7 +68,9 @@ const ci::vr::SessionOptions& Hmd::getSessionOptions() const
 
 bool Hmd::isMirroredUndistorted() const
 {
-	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirroMode );
+	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirroMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTROTED_MONO_LEFT == mMirroMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTROTED_MONO_RIGHT == mMirroMode );
 }
 
 void Hmd::enableMonoscopic(bool enabled)
