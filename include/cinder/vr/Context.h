@@ -89,7 +89,7 @@ public:
 	virtual ci::vr::Controller				*getController( ci::vr::Controller::Type type ) const;
 	virtual void							scanForControllers() = 0;
 
-	const ci::gl::Texture2dRef&				getHandIconTexture( ci::vr::Controller::HandId handId ) const { return mHandIconTextures[handId]; }
+	ci::gl::Texture2dRef					getControllerIconTexture( ci::vr::Controller::Type type ) const;
 
 	ci::vr::SignalControllerConnected&		getSignalControllerConnected() { return mSignalControllerConnected; }
 	ci::vr::SignalControllerDisconnected&	getSignalControllerDisconnected() { return mSignalControllerDisconnected; }
@@ -117,7 +117,7 @@ protected:
 	std::vector<ci::vr::ControllerRef>		mControllers;
 	double									mPrevControllersScanTime = 0;
 
-	ci::gl::Texture2dRef					mHandIconTextures[ci::vr::Controller::HAND_COUNT];
+	std::map<ci::vr::Controller::Type, ci::gl::Texture2dRef>	mControllerIconTextures;
 	
 	ci::vr::SignalControllerConnected		mSignalControllerConnected;
 	ci::vr::SignalControllerDisconnected	mSignalControllerDisconnected;
@@ -131,6 +131,6 @@ private:
 	ci::vr::DeviceManager*					mDeviceManager = nullptr;
 };
 
-ci::Surface8u getHandIcon( ci::vr::Controller::HandId handId );
+ci::Surface8u getHandIcon( ci::vr::Controller::Type type );
 
 }} // namespace cinder::vr

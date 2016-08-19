@@ -182,8 +182,8 @@ Hmd::Hmd( ci::vr::openvr::Context* context )
 	setupCompositor();
 
 	auto shader = ci::gl::getStockShader( ci::gl::ShaderDef().texture( GL_TEXTURE_2D ) );
-	mHandIconBatch[ci::vr::Controller::HAND_LEFT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
-	mHandIconBatch[ci::vr::Controller::HAND_RIGHT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
+	mControllerIconBatch[ci::vr::Controller::TYPE_LEFT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
+	mControllerIconBatch[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
 }
 
 Hmd::~Hmd()
@@ -828,14 +828,14 @@ void Hmd::drawControllers( ci::vr::Eye eye )
 			auto renderModel = mRenderModels[deviceIndex];
 			renderModel->draw();
 
-			ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+			ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 			::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( deviceIndex );
 			switch( role ) {
-				case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break; 
-				case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+				case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break; 
+				case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 			}
 
-			if( ci::vr::Controller::HAND_UNKNOWN != handId ) {
+			if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
 				ci::gl::ScopedBlendAlpha scopedBlend;
 				ci::gl::ScopedMatrices ScopedMatrices;
 				ci::gl::setProjectionMatrix( mEyeProjectionMatrix[eye] );
@@ -844,10 +844,10 @@ void Hmd::drawControllers( ci::vr::Eye eye )
 				ci::gl::translate( 0, -0.002f, 0.145f );
 				ci::gl::rotate( 0.11f, 1.0f, 0.0f, 0.0f );
 				ci::gl::scale( ci::vec3( 0.01f ) );
-				const auto& tex = mContext->getHandIconTexture( handId );
+				const auto& tex = mContext->getControllerIconTexture( ctrlType );
 				tex->bind( 0 );
-				mHandIconBatch[handId]->getGlslProg()->uniform( "uTex0", 0 );
-				mHandIconBatch[handId]->draw();
+				mControllerIconBatch[ctrlType]->getGlslProg()->uniform( "uTex0", 0 );
+				mControllerIconBatch[ctrlType]->draw();
 				tex->unbind( 0 );
 			}
 		}

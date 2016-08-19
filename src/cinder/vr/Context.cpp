@@ -52,8 +52,8 @@ namespace cinder { namespace vr {
 Context::Context( const ci::vr::SessionOptions& sessionOptions, ci::vr::DeviceManager* deviceManager )
 	: mSessionOptions( sessionOptions ), mDeviceManager( deviceManager )
 {
-	mHandIconTextures[ci::vr::Controller::HAND_LEFT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::HAND_LEFT ) );
-	mHandIconTextures[ci::vr::Controller::HAND_RIGHT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::HAND_RIGHT ) );
+	mControllerIconTextures[ci::vr::Controller::TYPE_LEFT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::TYPE_LEFT ) );
+	mControllerIconTextures[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::TYPE_RIGHT ) );
 
 	if( mSessionOptions.getControllerConnected() ) {
 		mSignalControllerConnected.connect( mSessionOptions.getControllerConnected() );
@@ -103,6 +103,16 @@ ci::vr::Controller* Context::getController( ci::vr::Controller::Type type ) cons
 	);
 	if( std::end ( mControllers ) != it ) {
 		result = it->get();
+	}
+	return result;
+}
+
+ci::gl::Texture2dRef Context::getControllerIconTexture( ci::vr::Controller::Type type ) const
+{
+	ci::gl::Texture2dRef result;
+	auto it = mControllerIconTextures.find( type );
+	if( mControllerIconTextures.end() != it ) {
+		result = it->second;
 	}
 	return result;
 }
@@ -160,18 +170,18 @@ void Context::removeController( const ci::vr::ControllerRef& controller )
 	);
 }
 
-ci::Surface8u getHandIcon( ci::vr::Controller::HandId handId )
+ci::Surface8u getHandIcon( ci::vr::Controller::Type type )
 {
 	ci::Surface8u result;
-	switch( handId ) {
-		case ci::vr::Controller::HAND_LEFT: {
+	switch( type ) {
+		case ci::vr::Controller::TYPE_LEFT: {
 			ci::BufferRef buffer = ci::Buffer::create( sIconLeftHandLength );
 			buffer->copyFrom( reinterpret_cast<const void *>( &sIconLeftHand[0] ), sIconLeftHandLength );
 			result = ci::loadImage( ci::DataSourceBuffer::create( buffer ) );
 		}
 		break;
 
-		case ci::vr::Controller::HAND_RIGHT: {
+		case ci::vr::Controller::TYPE_RIGHT: {
 			ci::BufferRef buffer = ci::Buffer::create( sIconRightHandLength );
 			buffer->copyFrom( reinterpret_cast<const void *>( &sIconRightHand[0] ), sIconRightHandLength );
 			result = ci::loadImage( ci::DataSourceBuffer::create( buffer ) );

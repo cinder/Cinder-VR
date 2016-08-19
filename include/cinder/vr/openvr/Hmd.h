@@ -130,7 +130,7 @@ private:
 	ci::gl::BatchRef					mDistortionBatch;
 
 	std::vector<RenderModelRef>			mRenderModels;
-	ci::gl::BatchRef					mHandIconBatch[ci::vr::Controller::HAND_COUNT];
+	std::map<ci::vr::Controller::Type, ci::gl::BatchRef> mControllerIconBatch;
 
 	uint32_t							mControllerCount = 0;
 	uint32_t							mControllerVertexCount = 0;

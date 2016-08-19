@@ -93,8 +93,9 @@ private:
 	std::vector<ci::mat4>					mDeviceToTrackingMatrices;
 	std::vector<ci::mat4>					mTrackingToDeviceMatrices;
 
-	// Don't rename it this to mControllers - mControllers already exists in the base class.
-	ci::vr::openvr::ControllerRef		mViveControllers[ci::vr::Controller::HAND_COUNT];
+	//// Don't rename it this to mControllers - mControllers already exists in the base class.
+	//ci::vr::openvr::ControllerRef		mViveControllers[ci::vr::Controller::HAND_COUNT];
+	std::map<ci::vr::Controller::Type, ci::vr::openvr::ControllerRef>	mViveControllers;
 
 	void								updateControllerConnections();
 };
