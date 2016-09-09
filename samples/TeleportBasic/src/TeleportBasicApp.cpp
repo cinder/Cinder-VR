@@ -114,6 +114,7 @@ protected:
 class TeleportBasicApp : public App {
 public:
 	void	setup() override; 
+	void	keyDown( KeyEvent event );
 	void	mouseDown( MouseEvent event );
 	void	update() override;
 	void	draw() override;
@@ -121,6 +122,7 @@ public:
 private:
 	ci::vr::Context				*mVrContext = nullptr;
 	ci::vr::Hmd					*mHmd = nullptr;
+	bool						mCyclopsMirroring = false;
 	CameraPersp					mCamera;
 
 	bool						mRecalcOrigin = false;
@@ -252,7 +254,52 @@ void TeleportBasicApp::setup()
 	initShapes( shader );
 } 
 
-void TeleportBasicApp::mouseDown(MouseEvent event)
+void TeleportBasicApp::keyDown( KeyEvent event )
+{
+	switch( event.getChar() ) {
+		case '1': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_STEREO );
+			}
+		}
+		break;
+
+		case '2': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO );
+			}
+		}
+		break;
+
+		case '3': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_LEFT );
+			}
+		}
+		break;
+
+		case '4': {
+			mCyclopsMirroring = false;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_RIGHT );
+			}
+		}
+		break;
+
+		case '5': {
+			mCyclopsMirroring = true;
+			if( mHmd ) {
+				mHmd->setMirrorMode( ci::vr::Hmd::MirrorMode::MIRROR_MODE_NONE );
+			}
+		}
+		break;
+	}
+}
+
+void TeleportBasicApp::mouseDown( MouseEvent event )
 {
 }
 
@@ -373,11 +420,6 @@ void TeleportBasicApp::drawScene()
 		shape->draw();
 	}
 
-	if( ci::vr::API_OCULUS == mVrContext->getApi() ) {
-	}
-	else if( ci::vr::API_OPENVR == mVrContext->getApi() ) {
-	}
-
 	// Draw coordinate frame
 	{
 		gl::drawCoordinateFrame( 1.0f );
@@ -422,7 +464,6 @@ void TeleportBasicApp::draw()
 
 	if( mHmd ) {
 		mHmd->bind();
-
 		for( auto eye : mHmd->getEyes() ) {
 			mHmd->enableEye( eye );	
 			drawScene();
@@ -431,9 +472,17 @@ void TeleportBasicApp::draw()
 		mHmd->unbind();
 
 		// Draw mirrored
-		gl::viewport( getWindowSize() );
-		gl::setMatricesWindow( getWindowSize() );
-		mHmd->drawMirrored( getWindowBounds() );
+		if( mCyclopsMirroring ) {
+			mHmd->submitFrame();
+			gl::viewport( getWindowSize() );
+			mHmd->enableEye( ci::vr::EYE_HMD );
+			drawScene();
+		}
+		else {
+			gl::viewport( getWindowSize() );
+			gl::setMatricesWindow( getWindowSize() );
+			mHmd->drawMirrored( getWindowBounds(), true );
+		}
 	}
 	else {
 		gl::viewport( getWindowSize() );

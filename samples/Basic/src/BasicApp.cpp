@@ -134,7 +134,7 @@ void BasicApp::draw()
 		// Draw mirrored
 		gl::viewport( getWindowSize() );
 		gl::setMatricesWindow( getWindowSize() );
-		mHmd->drawMirrored( getWindowBounds() );
+		mHmd->drawMirrored( getWindowBounds(), true );
 	}
 	else {
 		gl::viewport( getWindowSize() );

@@ -89,8 +89,8 @@ public:
 	virtual std::string						getName() const override;
 	
 	virtual std::string						getButtonName( ci::vr::Controller::ButtonId id ) const;
-	virtual std::string						getTriggerName( ci::vr::Controller::HandId id ) const;
-	virtual std::string						getAxisName( ci::vr::Controller::HandId id ) const;
+	virtual std::string						getTriggerName( ci::vr::Controller::TriggerId id ) const;
+	virtual std::string						getAxisName( ci::vr::Controller::AxisId id ) const;
 
 	virtual ::ovrButton						toOvr( ci::vr::Controller::ButtonId value ) const;
 	virtual ci::vr::Controller::ButtonId	fromOvr( ::ovrButton value ) const;
@@ -115,8 +115,8 @@ public:
 	virtual std::string						getName() const override;
 
 	virtual std::string						getButtonName( ci::vr::Controller::ButtonId id ) const;
-	virtual std::string						getTriggerName( ci::vr::Controller::HandId id ) const;
-	virtual std::string						getAxisName( ci::vr::Controller::HandId id ) const;
+	virtual std::string						getTriggerName( ci::vr::Controller::TriggerId id ) const;
+	virtual std::string						getAxisName( ci::vr::Controller::AxisId id ) const;
 
 	virtual ::ovrButton						toOvr( ci::vr::Controller::ButtonId value ) const;
 	virtual ci::vr::Controller::ButtonId	fromOvr( ::ovrButton value ) const;
@@ -141,8 +141,8 @@ public:
 	virtual std::string						getName() const override;
 
 	virtual std::string						getButtonName( ci::vr::Controller::ButtonId id ) const;
-	virtual std::string						getTriggerName( ci::vr::Controller::HandId id ) const;
-	virtual std::string						getAxisName( ci::vr::Controller::HandId id ) const;
+	virtual std::string						getTriggerName( ci::vr::Controller::TriggerId id ) const;
+	virtual std::string						getAxisName( ci::vr::Controller::AxisId id ) const;
 
 	virtual ::ovrButton						toOvr( ci::vr::Controller::ButtonId value ) const;
 	virtual ci::vr::Controller::ButtonId	fromOvr( ::ovrButton value ) const;

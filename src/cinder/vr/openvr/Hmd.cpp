@@ -54,6 +54,8 @@
 
 namespace cinder { namespace vr { namespace openvr {
 
+const float kFullFov = 110.0f; // Degrees
+
 std::string toString( const ci::mat4& mat ) 
 {
 	const float *m = &(mat[0][0]);
@@ -180,8 +182,8 @@ Hmd::Hmd( ci::vr::openvr::Context* context )
 	setupCompositor();
 
 	auto shader = ci::gl::getStockShader( ci::gl::ShaderDef().texture( GL_TEXTURE_2D ) );
-	mHandIconBatch[ci::vr::Controller::HAND_LEFT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
-	mHandIconBatch[ci::vr::Controller::HAND_RIGHT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
+	mControllerIconBatch[ci::vr::Controller::TYPE_LEFT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
+	mControllerIconBatch[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Batch::create( ci::geom::Plane().axes( ci::vec3( 1, 0, 0 ), ci::vec3( 0, 0, -1 ) ), shader );
 }
 
 Hmd::~Hmd()
@@ -415,6 +417,7 @@ void Hmd::updatePoseData()
 		const auto& hmdMat = mContext->getTrackingToDeviceMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
 		mEyeCamera[ci::vr::EYE_LEFT].setHmdMatrix( hmdMat );
 		mEyeCamera[ci::vr::EYE_RIGHT].setHmdMatrix( hmdMat );
+		mHmdCamera.setHmdMatrix( hmdMat );
 
 		mDeviceToTrackingMatrix = mContext->getDeviceToTrackingMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
 		mTrackingToDeviceMatrix = mContext->getTrackingToDeviceMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
@@ -504,34 +507,6 @@ void Hmd::updateControllerGeometry()
 	}
 }
 
-void Hmd::submitFrame()
-{
-	// Left eye
-	{
-		GLuint resolvedTexId = mRenderTargetLeft->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
-		::vr::VRCompositor()->Submit( ::vr::Eye_Left, &eyeTex );
-	}
-
-	// Right eye
-	{
-		GLuint resolvedTexId = mRenderTargetRight->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
-		::vr::VRCompositor()->Submit( ::vr::Eye_Right, &eyeTex );
-	}
-
-	{
-		// Note from OpenVR sample:
-		//
-		// HACKHACK. From gpuview profiling, it looks like there is a bug where two renders and a present
-		// happen right before and after the vsync causing all kinds of jittering issues. This glFinish()
-		// appears to clear that up. Temporary fix while I try to get nvidia to investigate this problem.
-		// 1/29/2014 mikesart
-		//
-		glFinish();
-	}
-}
-
 void Hmd::onClipValueChange( float nearClip, float farClip )
 {
 	mNearClip = nearClip;
@@ -564,6 +539,7 @@ void Hmd::unbind()
 	mRenderTargetLeft->unbindFramebuffer();
 	mRenderTargetRight->unbindFramebuffer();
 
+/*
 	submitFrame();
 	updatePoseData(); 
 
@@ -571,12 +547,60 @@ void Hmd::unbind()
 	if( pose.bPoseIsValid ) {
 		updateElapsedFrames();
 	}
+*/
+}
+
+void Hmd::submitFrame()
+{
+	// Left eye
+	{
+		GLuint resolvedTexId = mRenderTargetLeft->getColorTexture()->getId();
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::VRCompositor()->Submit( ::vr::Eye_Left, &eyeTex );
+	}
+
+	// Right eye
+	{
+		GLuint resolvedTexId = mRenderTargetRight->getColorTexture()->getId();
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::VRCompositor()->Submit( ::vr::Eye_Right, &eyeTex );
+	}
+
+	{
+		// Note from OpenVR sample:
+		//
+		// HACKHACK. From gpuview profiling, it looks like there is a bug where two renders and a present
+		// happen right before and after the vsync causing all kinds of jittering issues. This glFinish()
+		// appears to clear that up. Temporary fix while I try to get nvidia to investigate this problem.
+		// 1/29/2014 mikesart
+		//
+		glFinish();
+	}
+
+
+	// Update pose data
+	{
+		updatePoseData(); 
+
+		const auto& pose = mContext->getPose( ::vr::k_unTrackedDeviceIndex_Hmd );
+		if( pose.bPoseIsValid ) {
+			updateElapsedFrames();
+		}
+	}
+}
+
+float Hmd::getFullFov() const
+{
+	return kFullFov;
 }
 
 ci::Area Hmd::getEyeViewport( ci::vr::Eye eye ) const
 {
-	ci::Area result;
-	return result;
+	auto size = mRenderTargetSize;
+	if( ci::vr::EYE_LEFT == eye ) {
+		return Area( 0, 0, size.x / 2, size.y );
+	}
+	return Area( ( size.x + 1 ) / 2, 0, size.x, size.y );
 }
 
 void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
@@ -592,6 +616,18 @@ void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 		case ci::vr::EYE_RIGHT: {
 			mRenderTargetRight->bindFramebuffer();
 			ci::gl::viewport( mRenderTargetRight->getSize() );
+			ci::gl::clear( mClearColor );
+		}
+		break;
+
+		case ci::vr::EYE_HMD: {
+			auto viewport = ci::gl::getViewport();
+			auto area = ci::Area( viewport.first.x, viewport.first.y, viewport.first.x + viewport.second.x, viewport.first.y + viewport.second.y );
+			float width = area.getWidth();
+			float height = area.getHeight();
+			float aspect = width / height;
+			ci::mat4 mat = glm::perspectiveFov( toRadians( getFullFov() / aspect ), width, height, mNearClip, mFarClip );
+			mHmdCamera.setProjectionMatrix( mat );
 			ci::gl::clear( mClearColor );
 		}
 		break;
@@ -668,41 +704,90 @@ void Hmd::calculateInputRay()
 	mInputRay = ci::Ray( p0, dir );
 }
 
-void Hmd::drawMirrored( const ci::Rectf& r )
+void Hmd::drawMirroredImpl( const ci::Rectf& r )
 {
 	const uint32_t kTexUnit = 0;
 
 	ci::gl::ScopedDepthTest scopedDepthTest( false );
 	ci::gl::ScopedModelMatrix scopedModelMatrix;
-	ci::gl::ScopedGlslProg scopedShader( mDistortionShader );
+	ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 
-	float w = r.getWidth() / 2.0f;
-	float h = r.getHeight() / 2.0f;
+	switch( mMirrorMode ) {
+		// Default to stereo mirroring
+		default:
+		case Hmd::MirrorMode::MIRROR_MODE_STEREO: {
+			ci::gl::ScopedGlslProg scopedShader( mDistortionShader );
 
-	// Offset and the scale to fit the rect
-	ci::mat4 m = ci::mat4();
-	m[0][0] =  w;
-	m[1][1] = -h;
-	m[3][0] =  w + r.x1;
-	m[3][1] =  h + r.y1;
-	ci::gl::multModelMatrix( m );
+			float w = r.getWidth() / 2.0f;
+			float h = r.getHeight() / 2.0f;
 
-	// Render left eye
-	{
-		auto resolvedTex = mRenderTargetLeft->getColorTexture();
-		resolvedTex->bind( kTexUnit );
-		mDistortionShader->uniform( "uTex0", kTexUnit );
-		mDistortionBatch->draw( 0, mDistortionIndexCount / 2 );
-		resolvedTex->unbind( kTexUnit );
-	}
+			// Offset and the scale to fit the rect
+			ci::mat4 m = ci::mat4();
+			m[0][0] =  w;
+			m[1][1] = -h;
+			m[3][0] =  w + r.x1;
+			m[3][1] =  h + r.y1;
+			ci::gl::multModelMatrix( m );
 
-	// Render right eye
-	{
-		auto resolvedTex = mRenderTargetRight->getColorTexture();
-		resolvedTex->bind( kTexUnit );
-		mDistortionShader->uniform( "uTex0", kTexUnit );
-		mDistortionBatch->draw( mDistortionIndexCount / 2, mDistortionIndexCount / 2 );
-		resolvedTex->unbind( kTexUnit );
+			// Render left eye
+			{
+				auto resolvedTex = mRenderTargetLeft->getColorTexture();
+				resolvedTex->bind( kTexUnit );
+				mDistortionShader->uniform( "uTex0", kTexUnit );
+				mDistortionBatch->draw( 0, mDistortionIndexCount / 2 );
+				resolvedTex->unbind( kTexUnit );
+			}
+
+			// Render right eye
+			{
+				auto resolvedTex = mRenderTargetRight->getColorTexture();
+				resolvedTex->bind( kTexUnit );
+				mDistortionShader->uniform( "uTex0", kTexUnit );
+				mDistortionBatch->draw( mDistortionIndexCount / 2, mDistortionIndexCount / 2 );
+				resolvedTex->unbind( kTexUnit );
+			}
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_STEREO: {
+			float width = r.getWidth();
+			float height = r.getHeight();
+			ci::Rectf fittedRect = ci::Rectf( 0, 0, width / 2.0f, height );
+
+			// Render left eye
+			{
+				auto resolvedTex = mRenderTargetLeft->getColorTexture();
+				ci::gl::draw( resolvedTex, fittedRect );
+			}
+
+			// Render right eye
+			{
+				fittedRect += vec2( width / 2.0f, 0 );
+				auto resolvedTex = mRenderTargetRight->getColorTexture();
+				ci::gl::draw( resolvedTex, fittedRect );
+			}
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_LEFT: {
+			auto tex = mRenderTargetLeft->getColorTexture();
+			float width = static_cast<float>( tex->getWidth() );
+			float height = static_cast<float>( tex->getHeight() );
+			auto texRect = ci::Rectf( 0, 0, width, height );
+			auto fittedRect = r.getCenteredFit( texRect, true );
+			ci::gl::draw( tex, Area( fittedRect ), r );	
+		}
+		break;
+
+		case Hmd::MirrorMode::MIRROR_MODE_UNDISTORTED_MONO_RIGHT: {
+			auto tex = mRenderTargetRight->getColorTexture();
+			float width = static_cast<float>( tex->getWidth() );
+			float height = static_cast<float>( tex->getHeight() );
+			auto texRect = ci::Rectf( 0, 0, width, height );
+			auto fittedRect = r.getCenteredFit( texRect, true );
+			ci::gl::draw( tex, Area( fittedRect ), r );
+		}
+		break;
 	}
 }
 
@@ -743,14 +828,14 @@ void Hmd::drawControllers( ci::vr::Eye eye )
 			auto renderModel = mRenderModels[deviceIndex];
 			renderModel->draw();
 
-			ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+			ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 			::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( deviceIndex );
 			switch( role ) {
-				case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break; 
-				case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+				case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break; 
+				case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 			}
 
-			if( ci::vr::Controller::HAND_UNKNOWN != handId ) {
+			if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
 				ci::gl::ScopedBlendAlpha scopedBlend;
 				ci::gl::ScopedMatrices ScopedMatrices;
 				ci::gl::setProjectionMatrix( mEyeProjectionMatrix[eye] );
@@ -759,10 +844,10 @@ void Hmd::drawControllers( ci::vr::Eye eye )
 				ci::gl::translate( 0, -0.002f, 0.145f );
 				ci::gl::rotate( 0.11f, 1.0f, 0.0f, 0.0f );
 				ci::gl::scale( ci::vec3( 0.01f ) );
-				const auto& tex = mContext->getHandIconTexture( handId );
+				const auto& tex = mContext->getControllerIconTexture( ctrlType );
 				tex->bind( 0 );
-				mHandIconBatch[handId]->getGlslProg()->uniform( "uTex0", 0 );
-				mHandIconBatch[handId]->draw();
+				mControllerIconBatch[ctrlType]->getGlslProg()->uniform( "uTex0", 0 );
+				mControllerIconBatch[ctrlType]->draw();
 				tex->unbind( 0 );
 			}
 		}

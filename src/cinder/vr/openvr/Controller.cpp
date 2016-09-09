@@ -68,15 +68,20 @@ Controller::Controller( ::vr::TrackedDeviceIndex_t trackedDeviceIndex, ci::vr::C
 		}
 	}
 
-	// Add trig  gers and touchpad based on hand
 	switch( type ) {
-		case ci::vr::Controller::TYPE_LEFT  : mHandId = ci::vr::Controller::HAND_LEFT; break;
-		case ci::vr::Controller::TYPE_RIGHT : mHandId = ci::vr::Controller::HAND_RIGHT; break;
+		case ci::vr::Controller::TYPE_LEFT: {
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_VIVE_LEFT, this ) );
+			mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_VIVE_LEFT, this ) );
+		}
+		break;
+
+		case ci::vr::Controller::TYPE_RIGHT: {
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_VIVE_RIGHT, this ) );
+			mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_VIVE_RIGHT, this ) );
+		}
+		break;
+
 		default : break;
-	}
-	if( ci::vr::Controller::HAND_UNKNOWN != mHandId ) {
-		mTriggers.push_back( ci::vr::Controller::Trigger::create( mHandId, this ) );
-		mAxes.push_back( ci::vr::Controller::Axis::create( mHandId, this ) );
 	}
 }
 
@@ -123,12 +128,12 @@ std::string Controller::getButtonName( ci::vr::Controller::ButtonId id ) const
 	return result;
 }
 
-std::string Controller::getTriggerName( ci::vr::Controller::HandId id ) const
+std::string Controller::getTriggerName( ci::vr::Controller::TriggerId id ) const
 {
 	std::string result = "TRIGGER_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::HAND_LEFT  : result = "TRIGGER_VIVE"; break;
-		case ci::vr::Controller::HAND_RIGHT : result = "TRIGGER_VIVE"; break;
+		case ci::vr::Controller::TRIGGER_VIVE_LEFT	: result = "TRIGGER_VIVE_LEFT"; break;
+		case ci::vr::Controller::TRIGGER_VIVE_RIGHT	: result = "TRIGGER_VIVE_RIGHT"; break;
 		default: break;
 	}
 
@@ -142,12 +147,12 @@ std::string Controller::getTriggerName( ci::vr::Controller::HandId id ) const
 	return result;
 }
 
-std::string Controller::getAxisName( ci::vr::Controller::HandId id ) const
+std::string Controller::getAxisName( ci::vr::Controller::AxisId id ) const
 {
 	std::string result = "TOUCHPAD_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::HAND_LEFT  : result = "TOUCHPAD_VIVE"; break;
-		case ci::vr::Controller::HAND_RIGHT : result = "TOUCHPAD_VIVE"; break;
+		case ci::vr::Controller::AXIS_VIVE_LEFT		: result = "AXIS_VIVE_LEFT"; break;
+		case ci::vr::Controller::AXIS_VIVE_RIGHT	: result = "AXIS_VIVE_RIGHT"; break;
 		default: break;
 	}
 

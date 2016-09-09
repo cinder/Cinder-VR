@@ -68,8 +68,8 @@ public:
 	virtual std::string						getName() const override;
 
 	virtual std::string						getButtonName( ci::vr::Controller::ButtonId ) const override;
-	virtual std::string						getTriggerName( ci::vr::Controller::HandId ) const override;
-	virtual std::string						getAxisName( ci::vr::Controller::HandId ) const override;
+	virtual std::string						getTriggerName( ci::vr::Controller::TriggerId ) const override;
+	virtual std::string						getAxisName( ci::vr::Controller::AxisId ) const override;
 
 	virtual bool							hasInputRay() const override { return mEventsEnabled ? true : false; }
 
@@ -94,7 +94,7 @@ protected:
 	void									clearInputRay() { mInputRay = ci::Ray( ci::vec3( 0 ), ci::vec3(0 ) ); }
 
 	::vr::TrackedDeviceIndex_t				mTrackedDeviceIndex = UINT32_MAX;
-	ci::vr::Controller::HandId				mHandId = ci::vr::Controller::HAND_UNKNOWN;
+	//ci::vr::Controller::HandId				mHandId = ci::vr::Controller::HAND_UNKNOWN;
 
 	uint32_t								mPacketNum = UINT32_MAX;
 	bool									mTrackPadTouched = false;

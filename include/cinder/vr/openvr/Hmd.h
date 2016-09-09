@@ -75,15 +75,16 @@ public:
 
 	virtual void						bind() override;
 	virtual void						unbind() override;
+	virtual void						submitFrame() override;
 
-	virtual ci::Area					getEyeViewport( ci::vr::Eye eyeType ) const override;
+	virtual float						getFullFov() const;
+
+	virtual ci::Area					getEyeViewport( ci::vr::Eye eye ) const override;
 
 	virtual	void						enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode = ci::vr::COORD_SYS_WORLD ) override;
 
 	virtual void						calculateOriginMatrix() override;
 	virtual void						calculateInputRay() override;
-
-	virtual void						drawMirrored( const ci::Rectf& r ) override;
 
 	virtual void						drawControllers( ci::vr::Eye eyeType ) override;
 	virtual void						drawDebugInfo() override;
@@ -101,6 +102,8 @@ protected:
 
 	virtual void						onClipValueChange( float nearClip, float farClip ) override;
 	virtual void						onMonoscopicChange() override;
+
+	virtual void						drawMirroredImpl( const ci::Rectf& r ) override;
 
 private:
 	Hmd( ci::vr::openvr::Context* context );
@@ -127,7 +130,7 @@ private:
 	ci::gl::BatchRef					mDistortionBatch;
 
 	std::vector<RenderModelRef>			mRenderModels;
-	ci::gl::BatchRef					mHandIconBatch[ci::vr::Controller::HAND_COUNT];
+	std::map<ci::vr::Controller::Type, ci::gl::BatchRef> mControllerIconBatch;
 
 	uint32_t							mControllerCount = 0;
 	uint32_t							mControllerVertexCount = 0;
@@ -143,8 +146,6 @@ private:
 
 	void								updatePoseData();
 	void								updateControllerGeometry();
-
-	void								submitFrame();
 };
 
 }}} // namespace cinder::vr::vive
