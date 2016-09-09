@@ -127,6 +127,7 @@ enum Eye {
 	EYE_LEFT	= 0,
 	EYE_RIGHT	= 1,
 	EYE_COUNT	= 2,
+	EYE_HMD     = 0x7FFFFFFF,
 	EYE_UNKNOWN	= 0xFFFFFFFF
 };
 

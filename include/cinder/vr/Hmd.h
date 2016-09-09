@@ -56,6 +56,14 @@ class SessionOptions;
 class Hmd {
 public:
 
+	enum MirrorMode {
+		MIRROR_MODE_NONE = 0,
+		MIRROR_MODE_STEREO,
+		MIRROR_MODE_UNDISTORTED_STEREO,
+		MIRROR_MODE_UNDISTORTED_MONO_LEFT,
+		MIRROR_MODE_UNDISTORTED_MONO_RIGHT,
+	};
+
 	virtual ~Hmd();
 
 	ci::vr::Context*					getContext() const { return mContext; }
@@ -68,10 +76,16 @@ public:
 
 	virtual void						bind() = 0;
 	virtual void						unbind() = 0;
+	virtual void						submitFrame() = 0;
 
-	bool								isMirrored() const { return mIsMirrrored; }
-	void								enableMirrored( bool enabled ) { mIsMirrrored = enabled; }
+	//! Returns the full field of view (in degrees) covered by the HMD
+	virtual float						getFullFov() const = 0;
 
+	Hmd::MirrorMode						getMirrorMode() const { return mMirrorMode; }
+	void								setMirrorMode( Hmd::MirrorMode mirrorMode ) { mMirrorMode = mirrorMode; }
+	bool								isMirrored() const { return Hmd::MirrorMode::MIRROR_MODE_NONE != mMirrorMode; }
+	bool								isMirroredUndistorted() const;
+	
 	bool								isMonoscopic() const { return mIsMonoscopic; }
 	void								enableMonoscopic( bool enabled );
 
@@ -86,7 +100,7 @@ public:
 	ci::mat4							getEyeViewMatrix( ci::vr::Eye eye ) const;
 	ci::mat4							getEyeProjectionMatrix( ci::vr::Eye eye ) const;
 	ci::mat4							getEyeViewProjectionMatrix( ci::vr::Eye eye ) const;
-	virtual ci::Area					getEyeViewport( ci::vr::Eye eyeType ) const = 0;
+	virtual ci::Area					getEyeViewport( ci::vr::Eye eye ) const = 0;
 
 	////! Sets the look at position and target. Parameters are in world coordinate.
 	//virtual void						setLookAt( const ci::vec3 &position, const ci::vec3 &target, const ci::vec3& worldUp = ci::vec3( 0, 1, 0 ) );
@@ -105,7 +119,7 @@ public:
 	virtual void						calculateInputRay() {}
 	const ci::Ray&						getInputRay() const { return mInputRay; }
 
-	virtual void						drawMirrored( const ci::Rectf& r ) = 0;
+	virtual void						drawMirrored( const ci::Rectf& r, bool handleSubmitFrame = false );
 
 	virtual void						drawControllers( ci::vr::Eye eyeType ) = 0;
 	virtual void						drawDebugInfo() {}
@@ -113,7 +127,7 @@ public:
 protected:
 	Hmd( ci::vr::Context* context );
 
-	bool								mIsMirrrored = true;
+	Hmd::MirrorMode						mMirrorMode = Hmd::MirrorMode::MIRROR_MODE_STEREO;
 	bool								mIsMonoscopic = false;
 
 	ci::ivec2							mRenderTargetSize = ci::ivec2( 0 );
@@ -130,14 +144,15 @@ protected:
 	bool								mOriginInitialized = false;
 
 	ci::vec3							mLookPosition = ci::vec3( 0, 0, 0 );
-	//ci::vec3							mLookViewDirection;
-	//ci::vec3							mLookWorldUp;
-	//ci::quat							mLookOrientation;
+	ci::vec3							mLookViewDirection;
+	ci::vec3							mLookWorldUp;
+	ci::quat							mLookOrientation;
 	ci::mat4							mLookMatrix;
 	ci::mat4							mInverseLookMatrix;
 
 	std::vector<ci::vr::Eye>			mEyes;
 	ci::vr::CameraEye					mEyeCamera[ci::vr::EYE_COUNT];
+	ci::vr::CameraEye					mHmdCamera;
 
 	ci::mat4							mDeviceToTrackingMatrix;
 	ci::mat4							mTrackingToDeviceMatrix;
@@ -149,6 +164,8 @@ protected:
 
 	virtual void						onClipValueChange( float nearClip, float farClip ) = 0;
 	virtual void						onMonoscopicChange() = 0;
+
+	virtual void						drawMirroredImpl( const ci::Rectf& r ) = 0;
 
 private:
 	ci::vr::Context*					mContext = nullptr;

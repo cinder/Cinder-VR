@@ -310,15 +310,15 @@ void ControllerBasicApp::drawOculusXbox( const ci::vr::Controller *controller )
 	drawButton( vec2( -0.19f, 0.7f ), 0.03f, controller->getButton( ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK ), Color( 0, 0.8f, 0.8f ) );
 
 	// Left/right triggers
-	drawTrigger( vec2( -0.90f, 1.45f ), 0.12f, controller->getTrigger( ci::vr::Controller::HAND_LEFT ), Color( 0.9f, 0.1f, 0.9f ) );
-	drawTrigger( vec2(  0.60f, 1.45f ), 0.12f, controller->getTrigger( ci::vr::Controller::HAND_RIGHT ), Color( 0.9f, 0.1f, 0.9f ) );
+	drawTrigger( vec2( -0.90f, 1.45f ), 0.12f, controller->getTrigger( ci::vr::Controller::TRIGGER_OCULUS_XBOX_LEFT ), Color( 0.9f, 0.1f, 0.9f ) );
+	drawTrigger( vec2(  0.60f, 1.45f ), 0.12f, controller->getTrigger( ci::vr::Controller::TRIGGER_OCULUS_XBOX_RIGHT ), Color( 0.9f, 0.1f, 0.9f ) );
 
 	// Left/right thumbsticks
 	{
 		gl::ScopedModelMatrix scopedModel;
 		gl::translate( 0, 0, 0.01f );
-		drawAxis( vec2( -0.90f, 0.7f ), 0.21f, controller->getAxis( ci::vr::Controller::HAND_LEFT ), Color( 0.9f, 0.1f, 0.0f ) );
-		drawAxis( vec2(  0.40f, 0.2f ), 0.21f, controller->getAxis( ci::vr::Controller::HAND_RIGHT ), Color( 0.9f, 0.1f, 0.0f ) );
+		drawAxis( vec2( -0.90f, 0.7f ), 0.21f, controller->getAxis( ci::vr::Controller::AXIS_OCULUS_XBOX_LTHUMBSTICK ), Color( 0.9f, 0.1f, 0.0f ) );
+		drawAxis( vec2(  0.40f, 0.2f ), 0.21f, controller->getAxis( ci::vr::Controller::AXIS_OCULUS_XBOX_RTHUMBSTICK ), Color( 0.9f, 0.1f, 0.0f ) );
 	}
 }
 
@@ -463,6 +463,9 @@ void ControllerBasicApp::draw()
 		gl::viewport( getWindowSize() );
 		gl::setMatricesWindow( getWindowSize() );
 		mHmd->drawMirrored( getWindowBounds() );
+
+		// Submit frame
+		mHmd->submitFrame();
 	}
 	else {
 		gl::viewport( getWindowSize() );

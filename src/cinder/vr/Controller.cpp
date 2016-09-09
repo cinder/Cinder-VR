@@ -82,14 +82,17 @@ std::string Controller::Button::getInfo() const
 // -------------------------------------------------------------------------------------------------
 // Controller::Trigger
 // -------------------------------------------------------------------------------------------------
-ci::vr::Controller::TriggerRef Controller::Trigger::create( ci::vr::Controller::HandId id, ci::vr::Controller *controller )
+ci::vr::Controller::TriggerRef Controller::Trigger::create( ci::vr::Controller::TriggerId id, ci::vr::Controller *controller, float minLim, float maxLim )
 {
-	ci::vr::Controller::TriggerRef result = ci::vr::Controller::TriggerRef( new ci::vr::Controller::Trigger( id, controller ) );
+	ci::vr::Controller::TriggerRef result = ci::vr::Controller::TriggerRef( new ci::vr::Controller::Trigger( id, controller, minLim, maxLim ) );
 	return result;
 }
 
 void Controller::Trigger::setValue( float value )
 {
+	value = std::max( mMinLimit, std::min( mMaxLimit, value ) );
+	value = ( value - mMinLimit ) / ( mMaxLimit - mMinLimit );
+
 	float delta = fabs( mValue - value );
 	if( ( delta > 0.0f ) || ( value > 0.0f ) ) {
 		mValue = value;
@@ -108,7 +111,7 @@ std::string Controller::Trigger::getInfo() const
 // -------------------------------------------------------------------------------------------------
 // Controller::Axis
 // -------------------------------------------------------------------------------------------------
-ci::vr::Controller::AxisRef Controller::Axis::create( ci::vr::Controller::HandId id, ci::vr::Controller *controller )
+ci::vr::Controller::AxisRef Controller::Axis::create( ci::vr::Controller::AxisId id, ci::vr::Controller *controller )
 {
 	ci::vr::Controller::AxisRef result = ci::vr::Controller::AxisRef( new ci::vr::Controller::Axis( id, controller ) );
 	return result;
@@ -176,10 +179,10 @@ const ci::vr::Controller::Button* Controller::getButton( ci::vr::Controller::But
 	return result;
 }
 
-ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::HandId id )
+ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::TriggerId id )
 {
 	ci::vr::Controller::Trigger* result = nullptr;
-	if( ci::vr::Controller::HAND_ANY == id ) {
+	if( ci::vr::Controller::TRIGGER_ANY == id ) {
 		if( ! mTriggers.empty() ) {
 			result = mTriggers[0].get();
 		}
@@ -197,10 +200,10 @@ ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::HandId 
 	return result;
 }
 
-const ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::HandId id ) const
+const ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::TriggerId id ) const
 {
 	const ci::vr::Controller::Trigger* result = nullptr;
-	if( ci::vr::Controller::HAND_ANY == id ) {
+	if( ci::vr::Controller::TRIGGER_ANY == id ) {
 		if( ! mTriggers.empty() ) {
 			result = mTriggers[0].get();
 		}
@@ -218,10 +221,10 @@ const ci::vr::Controller::Trigger* Controller::getTrigger( ci::vr::Controller::H
 	return result;
 }
 
-ci::vr::Controller::Axis* Controller::getAxis( ci::vr::Controller::HandId id )
+ci::vr::Controller::Axis* Controller::getAxis( ci::vr::Controller::AxisId id )
 {
 	ci::vr::Controller::Axis* result = nullptr;
-	if( ci::vr::Controller::HAND_ANY == id ) {
+	if( ci::vr::Controller::AXIS_ANY == id ) {
 		if( ! mAxes.empty() ) {
 			result = mAxes[0].get();
 		}
@@ -239,10 +242,10 @@ ci::vr::Controller::Axis* Controller::getAxis( ci::vr::Controller::HandId id )
 	return result;
 }
 
-const ci::vr::Controller::Axis* Controller::getAxis( ci::vr::Controller::HandId id ) const
+const ci::vr::Controller::Axis* Controller::getAxis( ci::vr::Controller::AxisId id ) const
 {
 	const ci::vr::Controller::Axis* result = nullptr;
-	if( ci::vr::Controller::HAND_ANY == id ) {
+	if( ci::vr::Controller::AXIS_ANY == id ) {
 		if( ! mAxes.empty() ) {
 			result = mAxes[0].get();
 		}

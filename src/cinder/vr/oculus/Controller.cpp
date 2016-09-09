@@ -85,22 +85,92 @@ void Controller::processButtons( const ::ovrInputState& state )
 
 void Controller::processTriggers( const ::ovrInputState& state )
 {
-	if( mTriggers.size() < ci::vr::Controller::HAND_COUNT ) {
-		return;
-	}
+	switch( mInternalType ) {
+		case ::ovrControllerType_LTouch:
+		case ::ovrControllerType_RTouch: {
+			for( auto& trigger : mTriggers ) {
+				switch( trigger->getId() ) {
+					case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_INDEX: {
+						setTriggerValue( trigger.get(), state.IndexTrigger[::ovrHand_Left] );
+					}
+					break;
 
-	setTriggerValue( mTriggers[ci::vr::Controller::HAND_LEFT].get(), state.IndexTrigger[::ovrHand_Left] );
-	setTriggerValue( mTriggers[ci::vr::Controller::HAND_RIGHT].get(), state.IndexTrigger[::ovrHand_Right] );
+					case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_INDEX: {
+						setTriggerValue( trigger.get(), state.IndexTrigger[::ovrHand_Right] );
+					}
+					break;
+
+					case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_HAND: {
+						setTriggerValue( trigger.get(), state.HandTrigger[::ovrHand_Left] );
+					}
+					break;
+
+					case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_HAND: {
+						setTriggerValue( trigger.get(), state.HandTrigger[::ovrHand_Right] );
+					}
+					break;
+				}
+			}
+		}
+		break;
+
+		case ::ovrControllerType_XBox: {
+			for( auto& trigger : mTriggers ) {
+				switch( trigger->getId() ) {
+					case ci::vr::Controller::TRIGGER_OCULUS_XBOX_LEFT: {
+						setTriggerValue( trigger.get(), state.IndexTrigger[::ovrHand_Left] );
+					}
+					break;
+
+					case ci::vr::Controller::TRIGGER_OCULUS_XBOX_RIGHT: {
+						setTriggerValue( trigger.get(), state.IndexTrigger[::ovrHand_Right] );
+					}
+					break;
+				}
+			}
+		}
+		break;
+	}
 }
 
 void Controller::processAxes( const ::ovrInputState& state )
 {
-	if( mAxes.size() < ci::vr::Controller::HAND_COUNT ) {
-		return;
-	}
+	switch( mInternalType ) {
+		case ::ovrControllerType_LTouch:
+		case ::ovrControllerType_RTouch: {
+			for( auto& axis : mAxes ) {
+				switch( axis->getId() ) {
+					case ci::vr::Controller::AXIS_OCULUS_TOUCH_LTHUMBSTICK: {
+						setAxisValue( axis.get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Left] ) );
+					}
+					break;
 
-	setAxisValue( mAxes[ci::vr::Controller::HAND_LEFT].get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Left] ) );
-	setAxisValue( mAxes[ci::vr::Controller::HAND_RIGHT].get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Right] ) );
+					case ci::vr::Controller::AXIS_OCULUS_TOUCH_RTHUMBSTICK: {
+						setAxisValue( axis.get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Right] ) );
+					}
+					break;
+				}
+			}
+		}
+		break;
+
+		case ::ovrControllerType_XBox: {
+			for( auto& axis : mAxes ) {
+				switch( axis->getId() ) {
+					case ci::vr::Controller::AXIS_OCULUS_XBOX_LTHUMBSTICK: {
+						setAxisValue( axis.get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Left] ) );
+					}
+					break;
+
+					case ci::vr::Controller::AXIS_OCULUS_XBOX_RTHUMBSTICK: {
+						setAxisValue( axis.get(), ci::vr::oculus::fromOvr( state.Thumbstick[::ovrHand_Right] ) );
+					}
+					break;
+				}
+			}
+		}
+		break;
+	}
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -111,10 +181,10 @@ ControllerRemote::ControllerRemote( ci::vr::Context *context )
 {
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_LEFT, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_UP, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_RIGHT, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_DOWN, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_LEFT, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_UP, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_RIGHT, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_DOWN, this ) );
 }
 
 ControllerRemote::~ControllerRemote()
@@ -136,24 +206,24 @@ std::string ControllerRemote::getButtonName( ci::vr::Controller::ButtonId id ) c
 {
 	std::string result = "BUTTON_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER : result = "BUTTON_OCULUS_REMOTE_ENTER"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK  : result = "BUTTON_OCULUS_REMOTE_BACK"; break;
-		case ci::vr::Controller::BUTTON_DPAD_LEFT           : result = "BUTTON_DPAD_LEFT"; break;
-		case ci::vr::Controller::BUTTON_DPAD_UP             : result = "BUTTON_DPAD_UP"; break;
-		case ci::vr::Controller::BUTTON_DPAD_RIGHT          : result = "BUTTON_DPAD_RIGHT"; break;
-		case ci::vr::Controller::BUTTON_DPAD_DOWN           : result = "BUTTON_DPAD_DOWN"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER			: result = "BUTTON_OCULUS_REMOTE_ENTER"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK			: result = "BUTTON_OCULUS_REMOTE_BACK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_LEFT		: result = "BUTTON_OCULUS_REMOTE_DPAD_LEFT"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_UP		: result = "BUTTON_OCULUS_REMOTE_DPAD_UP"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_RIGHT	: result = "BUTTON_OCULUS_REMOTE_DPAD_RIGHT"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_DOWN		: result = "BUTTON_OCULUS_REMOTE_DPAD_DOWN"; break;
 		default: break;
 	}
 	return result;
 }
 
-std::string ControllerRemote::getTriggerName( ci::vr::Controller::HandId id ) const
+std::string ControllerRemote::getTriggerName( ci::vr::Controller::TriggerId id ) const
 {
 	std::string result = "TRIGGER_UNKNOWN";
 	return result;
 }
 
-std::string ControllerRemote::getAxisName( ci::vr::Controller::HandId id ) const
+std::string ControllerRemote::getAxisName( ci::vr::Controller::AxisId id ) const
 {
 	std::string result = "AXIS_UNKNOWN";
 	return result;
@@ -163,12 +233,12 @@ std::string ControllerRemote::getAxisName( ci::vr::Controller::HandId id ) const
 {
 	::ovrButton result = static_cast<::ovrButton>( 0 );
 	switch( value ) {
-		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER : result = ::ovrButton_Enter; break;
-		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK  : result = ::ovrButton_Back; break;
-		case ci::vr::Controller::BUTTON_DPAD_LEFT           : result = ::ovrButton_Left; break;
-		case ci::vr::Controller::BUTTON_DPAD_UP             : result = ::ovrButton_Up; break;
-		case ci::vr::Controller::BUTTON_DPAD_RIGHT          : result = ::ovrButton_Right; break;
-		case ci::vr::Controller::BUTTON_DPAD_DOWN           : result = ::ovrButton_Down; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER			: result = ::ovrButton_Enter; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK			: result = ::ovrButton_Back; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_LEFT		: result = ::ovrButton_Left; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_UP		: result = ::ovrButton_Up; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_RIGHT	: result = ::ovrButton_Right; break;
+		case ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_DOWN		: result = ::ovrButton_Down; break;
 		default: break;
 	}
 	return result;
@@ -180,10 +250,10 @@ ci::vr::Controller::ButtonId ControllerRemote::fromOvr( ::ovrButton value ) cons
 	switch( value ) {
 		case ::ovrButton_Enter : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_ENTER; break;
 		case ::ovrButton_Back  : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_BACK; break;
-		case ::ovrButton_Left  : result = ci::vr::Controller::BUTTON_DPAD_LEFT; break;
-		case ::ovrButton_Up    : result = ci::vr::Controller::BUTTON_DPAD_UP; break;
-		case ::ovrButton_Right : result = ci::vr::Controller::BUTTON_DPAD_RIGHT; break;
-		case ::ovrButton_Down  : result = ci::vr::Controller::BUTTON_DPAD_DOWN; break;
+		case ::ovrButton_Left  : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_LEFT; break;
+		case ::ovrButton_Up    : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_UP; break;
+		case ::ovrButton_Right : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_RIGHT; break;
+		case ::ovrButton_Down  : result = ci::vr::Controller::BUTTON_OCULUS_REMOTE_DPAD_DOWN; break;
 		default: break;
 	}
 	return result;
@@ -204,10 +274,10 @@ ControllerXbox::ControllerXbox( ci::vr::Context *context )
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_B, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_X, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_Y, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER, this ) );
-	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER, this ) );
+	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME, this ) );
@@ -216,11 +286,11 @@ ControllerXbox::ControllerXbox( ci::vr::Context *context )
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_RIGHT, this ) );
 	mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_DPAD_DOWN, this ) );
 
-	mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::HAND_LEFT, this ) );
-	mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::HAND_RIGHT, this ) );
+	mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_XBOX_LEFT, this ) );
+	mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_XBOX_RIGHT, this ) );
 
-	mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::HAND_LEFT, this ) );
-	mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::HAND_RIGHT, this ) );
+	mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_OCULUS_XBOX_LTHUMBSTICK, this ) );
+	mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_OCULUS_XBOX_RTHUMBSTICK, this ) );
 }
 
 ControllerXbox::~ControllerXbox()
@@ -242,42 +312,42 @@ std::string ControllerXbox::getButtonName( ci::vr::Controller::ButtonId id ) con
 {
 	std::string result = "BUTTON_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_A           : result = "BUTTON_OCULUS_XBOX_A"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_B           : result = "BUTTON_OCULUS_XBOX_B"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_X           : result = "BUTTON_OCULUS_XBOX_X"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_Y           : result = "BUTTON_OCULUS_XBOX_Y"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER   : result = "BUTTON_OCULUS_XBOX_LSHOULDER"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER   : result = "BUTTON_OCULUS_XBOX_RSHOULDER"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK : result = "BUTTON_OCULUS_XBOX_LTHUMBSTICK"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK : result = "BUTTON_OCULUS_XBOX_RTHUMBSTICK"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER       : result = "BUTTON_OCULUS_XBOX_ENTER"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK        : result = "BUTTON_OCULUS_XBOX_BACK"; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME        : result = "BUTTON_OCULUS_XBOX_HOME"; break;
-		case ci::vr::Controller::BUTTON_DPAD_LEFT               : result = "BUTTON_DPAD_LEFT"; break;
-		case ci::vr::Controller::BUTTON_DPAD_UP                 : result = "BUTTON_DPAD_UP"; break;
-		case ci::vr::Controller::BUTTON_DPAD_RIGHT              : result = "BUTTON_DPAD_RIGHT"; break;
-		case ci::vr::Controller::BUTTON_DPAD_DOWN               : result = "BUTTON_DPAD_DOWN"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_A			: result = "BUTTON_OCULUS_XBOX_A"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_B			: result = "BUTTON_OCULUS_XBOX_B"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_X			: result = "BUTTON_OCULUS_XBOX_X"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_Y			: result = "BUTTON_OCULUS_XBOX_Y"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK	: result = "BUTTON_OCULUS_XBOX_LTHUMBSTICK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK	: result = "BUTTON_OCULUS_XBOX_RTHUMBSTICK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER	: result = "BUTTON_OCULUS_XBOX_LSHOULDER"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER	: result = "BUTTON_OCULUS_XBOX_RSHOULDER"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER		: result = "BUTTON_OCULUS_XBOX_ENTER"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK		: result = "BUTTON_OCULUS_XBOX_BACK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME		: result = "BUTTON_OCULUS_XBOX_HOME"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_LEFT	: result = "BUTTON_OCULUS_XBOX_DPAD_LEFT"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_UP		: result = "BUTTON_OCULUS_XBOX_DPAD_UP"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_RIGHT	: result = "BUTTON_OCULUS_XBOX_DPAD_RIGHT"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_DOWN	: result = "BUTTON_OCULUS_XBOX_DPAD_DOWN"; break;
 	}
 	return result;
 }
 
-std::string ControllerXbox::getTriggerName( ci::vr::Controller::HandId id ) const
+std::string ControllerXbox::getTriggerName( ci::vr::Controller::TriggerId id ) const
 {
 	std::string result = "TRIGGER_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::HAND_LEFT  : result = "TRIGGER_OCULUS_XBOX_LEFT"; break;
-		case ci::vr::Controller::HAND_RIGHT : result = "TRIGGER_OCULUS_XBOX_RIGHT"; break;
+		case ci::vr::Controller::TRIGGER_OCULUS_XBOX_LEFT	: result = "TRIGGER_OCULUS_XBOX_LEFT"; break;
+		case ci::vr::Controller::TRIGGER_OCULUS_XBOX_RIGHT	: result = "TRIGGER_OCULUS_XBOX_RIGHT"; break;
 		default: break;
 	}
 	return result;
 }
 
-std::string ControllerXbox::getAxisName( ci::vr::Controller::HandId id ) const
+std::string ControllerXbox::getAxisName( ci::vr::Controller::AxisId id ) const
 {
 	std::string result = "AXIS_UNKNOWN";
 	switch( id ) {
-		case ci::vr::Controller::HAND_LEFT  : result = "THUMBSTICK_OCULUS_XBOX_LEFT"; break;
-		case ci::vr::Controller::HAND_RIGHT : result = "THUMBSTICK_OCULUS_XBOX_RIGHT"; break;
+		case ci::vr::Controller::AXIS_OCULUS_XBOX_LTHUMBSTICK	: result = "AXIS_OCULUS_XBOX_LTHUMBSTICK"; break;
+		case ci::vr::Controller::AXIS_OCULUS_XBOX_RTHUMBSTICK	: result = "AXIS_OCULUS_XBOX_RTHUMBSTICK"; break;
 		default: break;
 	}
 	return result;
@@ -287,21 +357,21 @@ std::string ControllerXbox::getAxisName( ci::vr::Controller::HandId id ) const
 {
 	::ovrButton result = static_cast<::ovrButton>( 0 );
 	switch( value ) {
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_A           : result = ::ovrButton_A; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_B           : result = ::ovrButton_B; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_X           : result = ::ovrButton_X; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_Y           : result = ::ovrButton_Y; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER   : result = ::ovrButton_LShoulder; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER   : result = ::ovrButton_RShoulder; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK : result = ::ovrButton_LThumb; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK : result = ::ovrButton_RThumb; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER       : result = ::ovrButton_Enter; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK        : result = ::ovrButton_Back; break;
-		case ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME        : result = ::ovrButton_Home; break;
-		case ci::vr::Controller::BUTTON_DPAD_LEFT			    : result = ::ovrButton_Left; break;
-		case ci::vr::Controller::BUTTON_DPAD_UP				    : result = ::ovrButton_Up; break;
-		case ci::vr::Controller::BUTTON_DPAD_RIGHT			    : result = ::ovrButton_Right; break;
-		case ci::vr::Controller::BUTTON_DPAD_DOWN			    : result = ::ovrButton_Down; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_A			: result = ::ovrButton_A; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_B			: result = ::ovrButton_B; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_X			: result = ::ovrButton_X; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_Y			: result = ::ovrButton_Y; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK	: result = ::ovrButton_LThumb; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK	: result = ::ovrButton_RThumb; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER	: result = ::ovrButton_LShoulder; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER	: result = ::ovrButton_RShoulder; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER		: result = ::ovrButton_Enter; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK		: result = ::ovrButton_Back; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME		: result = ::ovrButton_Home; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_LEFT	: result = ::ovrButton_Left; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_UP		: result = ::ovrButton_Up; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_RIGHT	: result = ::ovrButton_Right; break;
+		case ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_DOWN	: result = ::ovrButton_Down; break;
 
 	}
 	return result;
@@ -311,21 +381,21 @@ ci::vr::Controller::ButtonId ControllerXbox::fromOvr( ::ovrButton value ) const
 {
 	ci::vr::Controller::ButtonId result = ci::vr::Controller::BUTTON_UNKNOWN;
 	switch( value ) {
-		case ::ovrButton_A         : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_A; break;
-		case ::ovrButton_B         : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_B; break;
-		case ::ovrButton_X         : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_X; break;
-		case ::ovrButton_Y         : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_Y; break;
-		case ::ovrButton_LShoulder : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER; break;
-		case ::ovrButton_RShoulder : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER; break;
-		case ::ovrButton_LThumb    : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK; break;
-		case ::ovrButton_RThumb    : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK; break;
-		case ::ovrButton_Enter     : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER; break;
-		case ::ovrButton_Back      : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK; break;
-		case ::ovrButton_Home      : result = ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME; break;
-		case ::ovrButton_Left      : result = ci::vr::Controller::BUTTON_DPAD_LEFT; break;
-		case ::ovrButton_Up        : result = ci::vr::Controller::BUTTON_DPAD_UP; break;
-		case ::ovrButton_Right     : result = ci::vr::Controller::BUTTON_DPAD_RIGHT; break;
-		case ::ovrButton_Down      : result = ci::vr::Controller::BUTTON_DPAD_DOWN; break;
+		case ::ovrButton_A			: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_A; break;
+		case ::ovrButton_B			: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_B; break;
+		case ::ovrButton_X			: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_X; break;
+		case ::ovrButton_Y			: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_Y; break;
+		case ::ovrButton_LThumb		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_LTHUMBSTICK; break;
+		case ::ovrButton_RThumb		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_RTHUMBSTICK; break;
+		case ::ovrButton_LShoulder	: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_LSHOULDER; break;
+		case ::ovrButton_RShoulder	: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_RSHOULDER; break;
+		case ::ovrButton_Enter		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_ENTER; break;
+		case ::ovrButton_Back		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_BACK; break;
+		case ::ovrButton_Home		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_HOME; break;
+		case ::ovrButton_Left		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_LEFT; break;
+		case ::ovrButton_Up			: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_UP; break;
+		case ::ovrButton_Right		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_RIGHT; break;
+		case ::ovrButton_Down		: result = ci::vr::Controller::BUTTON_OCULUS_XBOX_DPAD_DOWN; break;
 	}
 	return result;
 }
@@ -343,7 +413,39 @@ void ControllerXbox::processInputState( const ::ovrInputState& state )
 ControllerTouch::ControllerTouch( ci::vr::Controller::Type type, ci::vr::Context *context )
 	: ci::vr::oculus::Controller( type, ci::vr::oculus::toOvr( type ), context )
 {
-	// @TODO: Add check for when controller isn't a Left or Right Touch controller
+	if( ( ci::vr::Controller::TYPE_LEFT != type ) && ( ci::vr::Controller::TYPE_RIGHT != type ) ) {
+		throw ci::vr::oculus::Exception( "Invalid touch controller type" );
+	}
+
+	const float kTouchHandMinLimit = 0.2f;
+	const float kTouchHandMaxLimit = 0.94f;
+
+	switch( type ) {
+		case ci::vr::Controller::TYPE_LEFT: {
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_X, this ) );
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_Y, this ) );
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_LTHUMBSTICK, this ) );
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_ENTER, this ) );
+
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_INDEX, this ) );
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_HAND, this, kTouchHandMinLimit, kTouchHandMaxLimit ) );
+
+			mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_OCULUS_TOUCH_LTHUMBSTICK, this ) );
+		}
+		break;
+
+		case ci::vr::Controller::TYPE_RIGHT: {
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_A, this ) );
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_B, this ) );
+			mButtons.push_back( ci::vr::Controller::Button::create( ci::vr::Controller::BUTTON_OCULUS_TOUCH_RTHUMBSTICK, this ) );
+
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_INDEX, this ) );
+			mTriggers.push_back( ci::vr::Controller::Trigger::create( ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_HAND, this, kTouchHandMinLimit, kTouchHandMaxLimit ) );
+
+			mAxes.push_back( ci::vr::Controller::Axis::create( ci::vr::Controller::AXIS_OCULUS_TOUCH_RTHUMBSTICK, this ) );
+		}
+		break;
+	}
 }
 
 ControllerTouch::~ControllerTouch()
@@ -371,18 +473,39 @@ std::string ControllerTouch::getName() const
 std::string ControllerTouch::getButtonName( ci::vr::Controller::ButtonId id ) const
 {
 	std::string result = "BUTTON_UNKNOWN";
+	switch( id ) {
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_A           : result = "BUTTON_OCULUS_A"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_B           : result = "BUTTON_OCULUS_B"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_X           : result = "BUTTON_OCULUS_X"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_Y           : result = "BUTTON_OCULUS_Y"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_LTHUMBSTICK : result = "BUTTON_OCULUS_LTHUMBSTICK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_RTHUMBSTICK : result = "BUTTON_OCULUS_RTHUMBSTICK"; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_ENTER       : result = "BUTTON_OCULUS_ENTER"; break;
+	}
 	return result;
 }
 
-std::string ControllerTouch::getTriggerName( ci::vr::Controller::HandId id ) const
+std::string ControllerTouch::getTriggerName( ci::vr::Controller::TriggerId id ) const
 {
 	std::string result = "TRIGGER_UNKNOWN";
+	switch( id ) {
+		case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_INDEX	: result = "TRIGGER_OCULUS_TOUCH_LEFT_INDEX"; break;
+		case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_LEFT_HAND		: result = "TRIGGER_OCULUS_TOUCH_LEFT_HAND"; break;
+		case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_INDEX	: result = "TRIGGER_OCULUS_TOUCH_RIGHT_INDEX"; break;
+		case ci::vr::Controller::TRIGGER_OCULUS_TOUCH_RIGHT_HAND	: result = "TRIGGER_OCULUS_TOUCH_RIGHT_HAND"; break;
+		default: break;
+	}
 	return result;
 }
 
-std::string ControllerTouch::getAxisName( ci::vr::Controller::HandId id ) const
+std::string ControllerTouch::getAxisName( ci::vr::Controller::AxisId id ) const
 {
 	std::string result = "AXIS_UNKNOWN";
+	switch( id ) {
+		case ci::vr::Controller::AXIS_OCULUS_TOUCH_LTHUMBSTICK	: result = "AXIS_OCULUS_TOUCH_LTHUMBSTICK"; break;
+		case ci::vr::Controller::AXIS_OCULUS_TOUCH_RTHUMBSTICK	: result = "AXIS_OCULUS_TOUCH_RTHUMBSTICK"; break;
+		default: break;
+	}
 	return result;
 }
 
@@ -390,6 +513,13 @@ std::string ControllerTouch::getAxisName( ci::vr::Controller::HandId id ) const
 {
 	::ovrButton result = static_cast<::ovrButton>( 0 );
 	switch( value ) {
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_A           : result = ::ovrButton_A; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_B           : result = ::ovrButton_B; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_X           : result = ::ovrButton_X; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_Y           : result = ::ovrButton_Y; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_LTHUMBSTICK : result = ::ovrButton_LThumb; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_RTHUMBSTICK : result = ::ovrButton_RThumb; break;
+		case ci::vr::Controller::BUTTON_OCULUS_TOUCH_ENTER       : result = ::ovrButton_Enter; break;
 	}
 	return result;
 }
@@ -398,6 +528,13 @@ ci::vr::Controller::ButtonId ControllerTouch::fromOvr( ::ovrButton value ) const
 {
 	ci::vr::Controller::ButtonId result = ci::vr::Controller::BUTTON_UNKNOWN;
 	switch( value ) {
+		case ::ovrButton_A         : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_A; break;
+		case ::ovrButton_B         : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_B; break;
+		case ::ovrButton_X         : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_X; break;
+		case ::ovrButton_Y         : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_Y; break;
+		case ::ovrButton_LThumb    : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_LTHUMBSTICK; break;
+		case ::ovrButton_RThumb    : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_RTHUMBSTICK; break;
+		case ::ovrButton_Enter     : result = ci::vr::Controller::BUTTON_OCULUS_TOUCH_ENTER; break;
 	}
 	return result;
 }

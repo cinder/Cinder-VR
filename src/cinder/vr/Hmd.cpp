@@ -50,6 +50,7 @@ Hmd::Hmd( ci::vr::Context* context )
 	mEyes.push_back( ci::vr::EYE_RIGHT );
 	mEyeCamera[ci::vr::EYE_LEFT] = ci::vr::CameraEye( ci::vr::EYE_LEFT );
 	mEyeCamera[ci::vr::EYE_RIGHT] = ci::vr::CameraEye( ci::vr::EYE_RIGHT );
+	mHmdCamera = ci::vr::CameraEye( ci::vr::EYE_HMD );
 }
 
 Hmd::~Hmd()
@@ -66,15 +67,22 @@ const ci::vr::SessionOptions& Hmd::getSessionOptions() const
 	return mContext->getSessionOptions();
 }
 
-void Hmd::enableMonoscopic( bool enabled )
+bool Hmd::isMirroredUndistorted() const
+{
+	return ( Hmd::MIRROR_MODE_UNDISTORTED_STEREO == mMirrorMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTORTED_MONO_LEFT == mMirrorMode ) ||
+		   ( Hmd::MIRROR_MODE_UNDISTORTED_MONO_RIGHT == mMirrorMode );
+}
+
+void Hmd::enableMonoscopic(bool enabled)
 {
 	mIsMonoscopic = enabled;
 	onMonoscopicChange();
 }
 
-const ci::vr::CameraEye& Hmd::getEyeCamera(ci::vr::Eye eye) const
+const ci::vr::CameraEye& Hmd::getEyeCamera( ci::vr::Eye eye ) const
 {
-	return mEyeCamera[eye];
+	return ( ci::vr::EYE_HMD == eye ) ? mHmdCamera : mEyeCamera[eye];
 }
 
 void Hmd::updateElapsedFrames()
@@ -138,33 +146,50 @@ void Hmd::setMatricesEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
 	}
 }
 
-void Hmd::setClip( float nearClip, float farClip )
+void Hmd::setClip(float nearClip, float farClip)
 {
 	onClipValueChange( nearClip, farClip );
 }
 
-//void Hmd::setLookAt( const ci::vec3 &position, const ci::vec3 &target, const ci::vec3 &worldUp )
-//{
-//	mLookPosition = position;
-//	mLookViewDirection = ci::normalize( target - position );
-//	mLookWorldUp = worldUp;
-//	mLookOrientation = ci::quat( glm::toQuat( alignZAxisWithTarget( -mLookViewDirection, mLookWorldUp ) ) );
-//
-//	ci::vec3 w = -normalize( mLookViewDirection );
-//	ci::vec3 u = ci::rotate( mLookOrientation, ci::vec3( 1, 0, 0 ) );
-//	ci::vec3 v = ci::rotate( mLookOrientation, ci::vec3( 0, 1, 0 ) );	
-//	ci::vec3 d = ci::vec3( - dot( mLookPosition, u ), - dot( mLookPosition, v ), - dot( mLookPosition, w ) );
-//
-//	mat4 &m = mLookMatrix;
-//	m[0][0] =  u.x; m[1][0] =  u.y; m[2][0] =  u.z; m[3][0] =  d.x;
-//	m[0][1] =  v.x; m[1][1] =  v.y; m[2][1] =  v.z; m[3][1] =  d.y;
-//	m[0][2] =  w.x; m[1][2] =  w.y; m[2][2] =  w.z; m[3][2] =  d.z;
-//	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
-//}
-
-void Hmd::setLookAt( const ci::vec3 &positon )
+// Not quite working yet
+/*
+void Hmd::setLookAt( const ci::vec3 &position, const ci::vec3 &target, const ci::vec3 &worldUp )
 {
-	mLookPosition = positon + vec3( 0, 0, getSessionOptions().getOriginOffset().z );
+	mLookPosition = position + vec3( 0, 0, getSessionOptions().getOriginOffset().z );
+	mLookViewDirection = ci::normalize( target - position );
+	mLookWorldUp = worldUp;
+	mLookOrientation = ci::quat( glm::toQuat( alignZAxisWithTarget( -mLookViewDirection, mLookWorldUp ) ) );
+
+	ci::vec3 w = -normalize( mLookViewDirection );
+	ci::vec3 u = ci::rotate( mLookOrientation, ci::vec3( 1, 0, 0 ) );
+	ci::vec3 v = ci::rotate( mLookOrientation, ci::vec3( 0, 1, 0 ) );	
+
+	ci::mat4 rotationMatrix;
+	{
+		ci::mat4 &m = rotationMatrix;
+		m[0][0] =  u.x; m[1][0] =  u.y; m[2][0] =  u.z; m[3][0] = 0.0f;
+		m[0][1] =  v.x; m[1][1] =  v.y; m[2][1] =  v.z; m[3][1] = 0.0f;
+		m[0][2] =  w.x; m[1][2] =  w.y; m[2][2] =  w.z; m[3][2] = 0.0f;
+		m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
+	}
+
+	ci::mat4 positionMatrix;
+	{
+		ci::mat4 &m = positionMatrix;
+		m[0][0] = 1.0f; m[1][0] = 0.0f; m[2][0] = 0.0f; m[3][0] = -mLookPosition.x;
+		m[0][1] = 0.0f; m[1][1] = 1.0f; m[2][1] = 0.0f; m[3][1] = -mLookPosition.y;
+		m[0][2] = 0.0f; m[1][2] = 0.0f; m[2][2] = 1.0f; m[3][2] = -mLookPosition.z;
+		m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
+	}
+
+	mLookMatrix = positionMatrix*rotationMatrix;
+	mInverseLookMatrix = glm::affineInverse( mLookMatrix );
+}
+*/
+
+void Hmd::setLookAt( const ci::vec3 &position )
+{
+	mLookPosition = position + vec3( 0, 0, getSessionOptions().getOriginOffset().z );
 	
 	mat4 &m = mLookMatrix;
 	m[0][0] = 1.0f; m[1][0] = 0.0f; m[2][0] = 0.0f; m[3][0] = -mLookPosition.x;
@@ -173,6 +198,36 @@ void Hmd::setLookAt( const ci::vec3 &positon )
 	m[0][3] = 0.0f; m[1][3] = 0.0f; m[2][3] = 0.0f; m[3][3] = 1.0f;
 
 	mInverseLookMatrix = glm::affineInverse( mLookMatrix );
+}
+
+void Hmd::drawMirrored(const ci::Rectf& r, bool handleSubmitFrame )
+{
+	if( ! isMirrored() ) {
+		// Submit the frame if requested even if mirror is turned off
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+		// Bail since mirroring is disabled
+		return;
+	}
+
+	// Undistorted mirroring requires drawing before frame submission to the device
+	if( isMirroredUndistorted() ) {
+		// Draw mirrored
+		drawMirroredImpl( r );
+		// Submit frame
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+	}
+	else {
+		// Submit frame
+		if( handleSubmitFrame ) {
+			submitFrame();
+		}
+		// Draw mirrored
+		drawMirroredImpl( r );
+	}
 }
 
 }} // namespace cinder::vr

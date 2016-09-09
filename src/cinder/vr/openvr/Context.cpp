@@ -60,8 +60,8 @@ Context::Context( const ci::vr::SessionOptions& sessionOptions, ci::vr::openvr::
 	mTrackingToDeviceMatrices.resize( ::vr::k_unMaxTrackedDeviceCount );
 
 	// These start out with the events disabled
-	mViveControllers[ci::vr::Controller::HAND_LEFT] = ci::vr::openvr::Controller::create( UINT32_MAX, ci::vr::Controller::TYPE_LEFT, this );
-	mViveControllers[ci::vr::Controller::HAND_RIGHT] = ci::vr::openvr::Controller::create( UINT32_MAX, ci::vr::Controller::TYPE_RIGHT, this );
+	mViveControllers[ci::vr::Controller::TYPE_LEFT] = ci::vr::openvr::Controller::create( UINT32_MAX, ci::vr::Controller::TYPE_LEFT, this );
+	mViveControllers[ci::vr::Controller::TYPE_RIGHT] = ci::vr::openvr::Controller::create( UINT32_MAX, ci::vr::Controller::TYPE_RIGHT, this );
 }
 
 Context::~Context()
@@ -123,19 +123,19 @@ void Context::updatePoseData()
 			continue;
 		}
 
-		ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+		ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 		::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( deviceIndex );
 		switch( role ) {
-			case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break;
-			case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+			case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break;
+			case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 		}
 
-		if( ( ci::vr::Controller::HAND_UNKNOWN != handId ) && ( mPoses[deviceIndex].bPoseIsValid ) && mViveControllers[handId]->isEventsEnabled() ) {
+		if( ( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) && ( mPoses[deviceIndex].bPoseIsValid ) && mViveControllers[ctrlType]->isEventsEnabled() ) {
 			const ci::mat4& inverseLookMatrix = mHmd->getInverseLookMatrix();
 			const ci::mat4& inverseOriginMatrix = mHmd->getInverseOriginMatrix();
 			const ci::mat4& deviceToTracking = getDeviceToTrackingMatrix( deviceIndex );
 			const ci::mat4& trackingToDevice = getDeviceToTrackingMatrix( ::vr::k_unTrackedDeviceIndex_Hmd );
-			mViveControllers[handId]->processControllerPose( inverseLookMatrix, inverseOriginMatrix, deviceToTracking, trackingToDevice );
+			mViveControllers[ctrlType]->processControllerPose( inverseLookMatrix, inverseOriginMatrix, deviceToTracking, trackingToDevice );
 		}
 	}
 }
@@ -161,18 +161,18 @@ void Context::updateControllerConnections()
 {
 	for( ::vr::TrackedDeviceIndex_t deviceIndex = ::vr::k_unTrackedDeviceIndex_Hmd; deviceIndex < ::vr::k_unMaxTrackedDeviceCount; ++deviceIndex ) {
 		if( ::vr::TrackedDeviceClass_Controller == mVrSystem->GetTrackedDeviceClass( deviceIndex ) ) {
-			ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+			ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 			::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( deviceIndex );
 			switch( role ) {
-				case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break;
-				case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+				case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break;
+				case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 				default: break;
 			}
 
-			if( ci::vr::Controller::HAND_UNKNOWN != handId ) {
-				mViveControllers[handId]->setEventsEnabled();
-				addController( mViveControllers[handId] );
-				getSignalControllerConnected().emit( mViveControllers[handId].get() );
+			if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
+				mViveControllers[ctrlType]->setEventsEnabled();
+				addController( mViveControllers[ctrlType] );
+				getSignalControllerConnected().emit( mViveControllers[ctrlType].get() );
 			}
 		}
 	}
@@ -208,12 +208,13 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 			}
 			*/
 
-			// Disconnect, remove, and disable all both controllers
-			for( uint32_t i = 0; i < ci::vr::Controller::HAND_COUNT; ++i ) {
-				getSignalControllerDisconnected().emit( mViveControllers[i].get() );
-				removeController( mViveControllers[i] );
-				mViveControllers[i]->setEventsEnabled( false );
-				mViveControllers[i]->clearInputRay();
+			// Disconnect, remove, and disable all controllers
+			for( auto& ctrlIt : mViveControllers ) {
+				auto& ctrl = ctrlIt.second;
+				getSignalControllerDisconnected().emit( ctrl.get() );
+				removeController( ctrl );
+				ctrl->setEventsEnabled( false );
+				ctrl->clearInputRay();
 			}
 			// Rescan for controllers
 			updateControllerConnections();
@@ -224,19 +225,19 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 			CI_LOG_D( "EVENT: VREvent_TrackedDeviceDeactivated" );
 			// Disconnect, remove, and disable the controller specified by event.trackedDeviceIndex.
 			if( ::vr::TrackedDeviceClass_Controller == mVrSystem->GetTrackedDeviceClass( event.trackedDeviceIndex ) ) {
-				ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+				ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 				::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( event.trackedDeviceIndex );
 				switch( role ) {
-					case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break;
-					case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+					case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break;
+					case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 					default: break;
 				}
 
-				if( ci::vr::Controller::HAND_UNKNOWN != handId ) {
-					getSignalControllerDisconnected().emit( mViveControllers[handId].get() );
-					removeController( mViveControllers[handId] );
-					mViveControllers[handId]->setEventsEnabled( false );
-					mViveControllers[handId]->clearInputRay();
+				if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
+					getSignalControllerDisconnected().emit( mViveControllers[ctrlType].get() );
+					removeController( mViveControllers[ctrlType] );
+					mViveControllers[ctrlType]->setEventsEnabled( false );
+					mViveControllers[ctrlType]->clearInputRay();
 				}
 			}
 		}
@@ -244,12 +245,13 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 
 		case ::vr::VREvent_TrackedDeviceUserInteractionStarted: {
 			CI_LOG_D( "EVENT: VREvent_TrackedDeviceUserInteractionStarted" );
-			// Disconnect, remove, and disable all both controllers
-			for( uint32_t i = 0; i < ci::vr::Controller::HAND_COUNT; ++i ) {
-				getSignalControllerDisconnected().emit( mViveControllers[i].get() );
-				removeController( mViveControllers[i] );
-				mViveControllers[i]->setEventsEnabled( false );
-				mViveControllers[i]->clearInputRay();
+			// Disconnect, remove, and disable all controllers
+			for( auto& ctrlIt : mViveControllers ) {
+				auto& ctrl = ctrlIt.second;
+				getSignalControllerDisconnected().emit( ctrl.get() );
+				removeController( ctrl );
+				ctrl->setEventsEnabled( false );
+				ctrl->clearInputRay();
 			}
 			// Rescan for controllers
 			updateControllerConnections();
@@ -263,11 +265,12 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 		case ::vr::VREvent_TrackedDeviceRoleChanged: {
 			CI_LOG_D( "EVENT: VREvent_TrackedDeviceRoleChanged" );
 			// Disconnect, remove, and disable all both controllers
-			for( uint32_t i = 0; i < ci::vr::Controller::HAND_COUNT; ++i ) {
-				getSignalControllerDisconnected().emit( mViveControllers[i].get() );
-				removeController( mViveControllers[i] );
-				mViveControllers[i]->setEventsEnabled( false );
-				mViveControllers[i]->clearInputRay();
+			for( auto& ctrlIt : mViveControllers ) {
+				auto& ctrl = ctrlIt.second;
+				getSignalControllerDisconnected().emit( ctrl.get() );
+				removeController( ctrl );
+				ctrl->setEventsEnabled( false );
+				ctrl->clearInputRay();
 			}
 			// Rescan for controllers
 			updateControllerConnections();
@@ -283,18 +286,18 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 			continue;
 		}
 
-		ci::vr::Controller::HandId handId = ci::vr::Controller::HAND_UNKNOWN;
+		ci::vr::Controller::Type ctrlType = ci::vr::Controller::TYPE_UNKNOWN;
 		::vr::ETrackedControllerRole role = mVrSystem->GetControllerRoleForTrackedDeviceIndex( deviceIndex );
 		switch( role ) {
-			case ::vr::TrackedControllerRole_LeftHand  : handId = ci::vr::Controller::HAND_LEFT; break;
-			case ::vr::TrackedControllerRole_RightHand : handId = ci::vr::Controller::HAND_RIGHT; break;
+			case ::vr::TrackedControllerRole_LeftHand  : ctrlType = ci::vr::Controller::TYPE_LEFT; break;
+			case ::vr::TrackedControllerRole_RightHand : ctrlType = ci::vr::Controller::TYPE_RIGHT; break;
 			default: break;
 		}
 
-		if( ci::vr::Controller::HAND_UNKNOWN != handId ) {
+		if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
 			::vr::VRControllerState_t state = {};
-			if( mVrSystem->GetControllerState( deviceIndex, &state ) && mViveControllers[handId]->isEventsEnabled() ) {
-				mViveControllers[handId]->processControllerState( state );
+			if( mVrSystem->GetControllerState( deviceIndex, &state ) && mViveControllers[ctrlType]->isEventsEnabled() ) {
+				mViveControllers[ctrlType]->processControllerState( state );
 			}
 		}
 	}
