@@ -596,11 +596,8 @@ float Hmd::getFullFov() const
 
 ci::Area Hmd::getEyeViewport( ci::vr::Eye eye ) const
 {
-	auto size = mRenderTargetSize;
-	if( ci::vr::EYE_LEFT == eye ) {
-		return Area( 0, 0, size.x / 2, size.y );
-	}
-	return Area( ( size.x + 1 ) / 2, 0, size.x, size.y );
+	// The viewport is the same for both eyes
+	return Area( { 0, 0 }, mRenderTargetSize );
 }
 
 void Hmd::enableEye( ci::vr::Eye eye, ci::vr::CoordSys eyeMatrixMode )
