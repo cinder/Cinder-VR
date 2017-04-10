@@ -462,6 +462,7 @@ void Hmd::calculateInputRay()
 void Hmd::drawMirroredImpl( const ci::Rectf& r )
 {
 	if( isMirrored() && mMirrorTexture ) {
+		gl::enable( GL_FRAMEBUFFER_SRGB );
 		ci::gl::ScopedDepth scopedDepth( false );
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
@@ -503,6 +504,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 			}
 			break;
 		}
+		gl::disable( GL_FRAMEBUFFER_SRGB );
 	}
 }
 
