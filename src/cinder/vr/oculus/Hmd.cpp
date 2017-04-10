@@ -70,7 +70,12 @@ Hmd::Hmd( ci::vr::oculus::Context *context )
 	initializeRenderTarget();
 	onMonoscopicChange();
 	app::getWindow()->getSignalResize().connect( [this](){
-		initializeMirrorTexture( app::getWindowSize() );
+		try {
+			initializeMirrorTexture( app::getWindowSize() );
+		}
+		catch( ci::vr::oculus::Exception& exc ) {
+			CI_LOG_EXCEPTION( exc.what(), exc );
+		}
 	} );
 
 	//ovr_SetTrackingOriginType( mSession, ovrTrackingOrigin_EyeLevel );
@@ -275,7 +280,7 @@ void Hmd::bind()
 	// Calculate input ray
 	calculateInputRay();
 
-	::ovr_GetEyePoses( mSession, mFrameIndex, ovrTrue, mEyeViewOffset, mEyeRenderPose, &mSensorSampleTime );
+	::ovr_GetEyePoses( mSession, 0, ovrTrue, mEyeViewOffset, mEyeRenderPose, &mSensorSampleTime );
 	const ::ovrEyeType kEyes[2] = { ::ovrEye_Left, ::ovrEye_Right };
 	for( auto eye : kEyes ) {
 		// View matrix
@@ -342,10 +347,8 @@ void Hmd::submitFrame()
 	mBaseLayer.ColorTexture[1] = NULL;
 	
 	ovrLayerHeader* layers = &mBaseLayer.Header;
-	auto result = ::ovr_SubmitFrame( mSession, mFrameIndex, &viewScaleDesc, &layers, 1 );
+	auto result = ::ovr_SubmitFrame( mSession, 0, &viewScaleDesc, &layers, 1 );
 	mIsVisible = ( result == ovrSuccess );
-
-	++mFrameIndex;
 
 	// Update frame index
 	if( mIsVisible ) {
@@ -459,6 +462,7 @@ void Hmd::calculateInputRay()
 void Hmd::drawMirroredImpl( const ci::Rectf& r )
 {
 	if( isMirrored() && mMirrorTexture ) {
+		gl::enable( GL_FRAMEBUFFER_SRGB );
 		ci::gl::ScopedDepth scopedDepth( false );
 		ci::gl::ScopedColor scopedColor( 1, 1, 1 );
 		ci::gl::ScopedModelMatrix scopedModelMatrix;
@@ -500,6 +504,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 			}
 			break;
 		}
+		gl::disable( GL_FRAMEBUFFER_SRGB );
 	}
 }
 
