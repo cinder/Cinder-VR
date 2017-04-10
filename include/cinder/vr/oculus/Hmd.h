@@ -101,7 +101,6 @@ public:
 
 	glm::ivec2							getNativeResolution() const { return fromOvr( mHmdDesc.Resolution ); }
 	glm::ivec2							getRenderTargetSize() const { return mRenderTargetSize; }
-
 protected:
 	// ---------------------------------------------------------------------------------------------
 	// Protected methods inherited from ci::vr::Hmd
@@ -127,7 +126,6 @@ private:
 	bool								mIsVisible = true;
 
 	// Oculus SDK
-	long long							mFrameIndex = 0;
 	::ovrSession						mSession = nullptr;
 	::ovrHmdDesc						mHmdDesc;
 

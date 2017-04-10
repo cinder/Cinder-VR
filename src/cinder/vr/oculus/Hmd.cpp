@@ -275,7 +275,7 @@ void Hmd::bind()
 	// Calculate input ray
 	calculateInputRay();
 
-	::ovr_GetEyePoses( mSession, mFrameIndex, ovrTrue, mEyeViewOffset, mEyeRenderPose, &mSensorSampleTime );
+	::ovr_GetEyePoses( mSession, 0, ovrTrue, mEyeViewOffset, mEyeRenderPose, &mSensorSampleTime );
 	const ::ovrEyeType kEyes[2] = { ::ovrEye_Left, ::ovrEye_Right };
 	for( auto eye : kEyes ) {
 		// View matrix
@@ -342,10 +342,8 @@ void Hmd::submitFrame()
 	mBaseLayer.ColorTexture[1] = NULL;
 	
 	ovrLayerHeader* layers = &mBaseLayer.Header;
-	auto result = ::ovr_SubmitFrame( mSession, mFrameIndex, &viewScaleDesc, &layers, 1 );
+	auto result = ::ovr_SubmitFrame( mSession, 0, &viewScaleDesc, &layers, 1 );
 	mIsVisible = ( result == ovrSuccess );
-
-	++mFrameIndex;
 
 	// Update frame index
 	if( mIsVisible ) {
