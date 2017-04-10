@@ -70,7 +70,12 @@ Hmd::Hmd( ci::vr::oculus::Context *context )
 	initializeRenderTarget();
 	onMonoscopicChange();
 	app::getWindow()->getSignalResize().connect( [this](){
-		initializeMirrorTexture( app::getWindowSize() );
+		try {
+			initializeMirrorTexture( app::getWindowSize() );
+		}
+		catch( ci::vr::oculus::Exception& exc ) {
+			CI_LOG_EXCEPTION( exc.what(), exc );
+		}
 	} );
 
 	//ovr_SetTrackingOriginType( mSession, ovrTrackingOrigin_EyeLevel );
