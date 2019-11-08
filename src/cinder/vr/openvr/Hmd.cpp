@@ -291,14 +291,15 @@ void Hmd::setupDistortion()
 		for( int x = 0; x < lensGridSegmentCountH; ++x ) {
 			float u = x * w; 
 			float v = 1.0f - ( y * h );
-			::vr::DistortionCoordinates_t dc = mVrSystem->ComputeDistortion( ::vr::Eye_Left, u, v );
-			
-			VertexDesc vert		= VertexDesc();
-			vert.position		= ci::vec2( xOffset + u, -1.0f + ( 2.0f * y * h ) );
-			vert.texCoordRed	= ci::vec2( dc.rfRed[0],   1.0f - dc.rfRed[1] );
-			vert.texCoordGreen	= ci::vec2( dc.rfGreen[0], 1.0f - dc.rfGreen[1] );
-			vert.texCoordBlue	= ci::vec2( dc.rfBlue[0],  1.0f - dc.rfBlue[1] );
-			vertexData.push_back( vert );
+			::vr::DistortionCoordinates_t dc;
+			if( mVrSystem->ComputeDistortion( ::vr::Eye_Left, u, v, &dc ) ) {
+				VertexDesc vert		= VertexDesc();
+				vert.position		= ci::vec2( xOffset + u, -1.0f + ( 2.0f * y * h ) );
+				vert.texCoordRed	= ci::vec2( dc.rfRed[0],   1.0f - dc.rfRed[1] );
+				vert.texCoordGreen	= ci::vec2( dc.rfGreen[0], 1.0f - dc.rfGreen[1] );
+				vert.texCoordBlue	= ci::vec2( dc.rfBlue[0],  1.0f - dc.rfBlue[1] );
+				vertexData.push_back( vert );
+			}
 		}
 	}
 
@@ -308,14 +309,15 @@ void Hmd::setupDistortion()
 		for( int x = 0; x < lensGridSegmentCountH; ++x ) {
 			float u = x * w; 
 			float v = 1 - ( y * h );
-			::vr::DistortionCoordinates_t dc = mVrSystem->ComputeDistortion( ::vr::Eye_Right, u, v );
-
-			VertexDesc vert		= VertexDesc();
-			vert.position		= ci::vec2( xOffset + u, -1.0f + ( 2.0f * y * h ) );
-			vert.texCoordRed	= ci::vec2( dc.rfRed[0],   1.0f - dc.rfRed[1] );
-			vert.texCoordGreen	= ci::vec2( dc.rfGreen[0], 1.0f - dc.rfGreen[1] );
-			vert.texCoordBlue	= ci::vec2( dc.rfBlue[0],  1.0f - dc.rfBlue[1] );
-			vertexData.push_back( vert );
+			::vr::DistortionCoordinates_t dc;
+			if ( mVrSystem->ComputeDistortion( ::vr::Eye_Right, u, v, &dc ) ) {
+				VertexDesc vert		= VertexDesc();
+				vert.position		= ci::vec2( xOffset + u, -1.0f + ( 2.0f * y * h ) );
+				vert.texCoordRed	= ci::vec2( dc.rfRed[0],   1.0f - dc.rfRed[1] );
+				vert.texCoordGreen	= ci::vec2( dc.rfGreen[0], 1.0f - dc.rfGreen[1] );
+				vert.texCoordBlue	= ci::vec2( dc.rfBlue[0],  1.0f - dc.rfBlue[1] );
+				vertexData.push_back( vert );
+			}
 		}
 	}
 
@@ -436,7 +438,7 @@ void Hmd::updatePoseData()
 
 void Hmd::updateControllerGeometry()
 {
-	if( mVrSystem->IsInputFocusCapturedByAnotherProcess() ) {
+	if( !mVrSystem->IsInputAvailable() ) {
 		return;
 	}
 
@@ -555,14 +557,14 @@ void Hmd::submitFrame()
 	// Left eye
 	{
 		GLuint resolvedTexId = mRenderTargetLeft->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::TextureType_OpenGL, ::vr::ColorSpace_Gamma };
 		::vr::VRCompositor()->Submit( ::vr::Eye_Left, &eyeTex );
 	}
 
 	// Right eye
 	{
 		GLuint resolvedTexId = mRenderTargetRight->getColorTexture()->getId();
-		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::API_OpenGL, ::vr::ColorSpace_Gamma };
+		::vr::Texture_t eyeTex = { reinterpret_cast<void*>( resolvedTexId ), ::vr::TextureType_OpenGL, ::vr::ColorSpace_Gamma };
 		::vr::VRCompositor()->Submit( ::vr::Eye_Right, &eyeTex );
 	}
 
@@ -793,7 +795,7 @@ void Hmd::drawMirroredImpl( const ci::Rectf& r )
 
 void Hmd::drawControllers( ci::vr::Eye eye )
 {
-	if( mVrSystem->IsInputFocusCapturedByAnotherProcess() ) {
+	if( !mVrSystem->IsInputAvailable() ) {
 		return;
 	}
 

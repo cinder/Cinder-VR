@@ -225,13 +225,13 @@ void Hmd::onClipValueChange( float nearClip, float farClip )
 void Hmd::onMonoscopicChange()
 {
 	if( isMonoscopic() ) {
-		auto centerEyeOffset = 0.5f * ( fromOvr( mEyeRenderDesc[0].HmdToEyeOffset ) + fromOvr( mEyeRenderDesc[1].HmdToEyeOffset ) );
-		mEyeViewOffset[0] = toOvr( centerEyeOffset );
-		mEyeViewOffset[1] = toOvr( centerEyeOffset );
+		auto centerEyeOffset = 0.5f * ( fromOvr( mEyeRenderDesc[0].HmdToEyePose.Position ) + fromOvr( mEyeRenderDesc[1].HmdToEyePose.Position ) );
+		mEyeViewPose[0].Position = toOvr( centerEyeOffset );
+		mEyeViewPose[1].Position = toOvr( centerEyeOffset );
 	}
 	else {
-		mEyeViewOffset[0] = mEyeRenderDesc[0].HmdToEyeOffset;
-		mEyeViewOffset[1] = mEyeRenderDesc[1].HmdToEyeOffset;
+		mEyeViewPose[0].Position = mEyeRenderDesc[0].HmdToEyePose.Position;
+		mEyeViewPose[1].Position = mEyeRenderDesc[1].HmdToEyePose.Position;
 	}
 }
 
@@ -275,7 +275,7 @@ void Hmd::bind()
 	// Calculate input ray
 	calculateInputRay();
 
-	::ovr_GetEyePoses( mSession, mFrameIndex, ovrTrue, mEyeViewOffset, mEyeRenderPose, &mSensorSampleTime );
+	::ovr_GetEyePoses( mSession, mFrameIndex, ovrTrue, mEyeViewPose, mEyeRenderPose, &mSensorSampleTime );
 	const ::ovrEyeType kEyes[2] = { ::ovrEye_Left, ::ovrEye_Right };
 	for( auto eye : kEyes ) {
 		// View matrix
@@ -333,7 +333,7 @@ void Hmd::submitFrame()
 	mBaseLayer.SensorSampleTime = mSensorSampleTime;
 	for( auto eye : getEyes() ) {
 		auto area = getEyeViewport( eye );
-		viewScaleDesc.HmdToEyeOffset[eye]	= mEyeViewOffset[eye];
+		viewScaleDesc.HmdToEyePose[eye]		= mEyeViewPose[eye];
 		mBaseLayer.Fov[eye]					= mEyeRenderDesc[eye].Fov;
 		mBaseLayer.RenderPose[eye]			= mEyeRenderPose[eye];
 		mBaseLayer.Viewport[eye]			= { { area.x1, area.y1 }, { area.getWidth(), area.getHeight() } };

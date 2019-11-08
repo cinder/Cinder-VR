@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\cinder">
+      <UniqueIdentifier>{9cd05c4b-9361-4ca6-954a-3698a4552932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cinder\vr">
+      <UniqueIdentifier>{9087b1e2-c388-42b2-8067-841deaa6be6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cinder">
+      <UniqueIdentifier>{dc8bbd1c-becf-46fb-b453-56f2d637b5f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cinder\vr">
+      <UniqueIdentifier>{8a978d55-c8c5-47fa-a292-2fd3fcf099c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cinder\vr\oculus">
+      <UniqueIdentifier>{5416bdb4-8193-4589-a8d2-742ab9d934f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cinder\vr\openvr">
+      <UniqueIdentifier>{8219568f-ba64-4c56-a5a4-18cb966e0f51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cinder\vr\oculus">
+      <UniqueIdentifier>{59e3cb88-0476-4c14-990b-c7d01539b6ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cinder\vr\openvr">
+      <UniqueIdentifier>{6dbc9c31-5e6f-464f-8414-bd542ff2cb1a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\cinder\vr\Context.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Controller.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Hmd.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Environment.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Platform.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Vr.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\DeviceManager.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\Camera.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\openvr\Context.h">
+      <Filter>Header Files\cinder\vr\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\openvr\Controller.h">
+      <Filter>Header Files\cinder\vr\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\openvr\DeviceManager.h">
+      <Filter>Header Files\cinder\vr\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\openvr\Hmd.h">
+      <Filter>Header Files\cinder\vr\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\oculus\Context.h">
+      <Filter>Header Files\cinder\vr\oculus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\oculus\Controller.h">
+      <Filter>Header Files\cinder\vr\oculus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\oculus\DeviceManager.h">
+      <Filter>Header Files\cinder\vr\oculus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\oculus\Hmd.h">
+      <Filter>Header Files\cinder\vr\oculus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\openvr\OpenVr.h">
+      <Filter>Header Files\cinder\vr\openvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\oculus\Oculus.h">
+      <Filter>Header Files\cinder\vr\oculus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cinder\vr\SessionOptions.h">
+      <Filter>Header Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cinder\vr\IconLeftHand.h">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cinder\vr\IconRightHand.h">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\cinder\vr\Context.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\Controller.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\Hmd.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\Environment.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\DeviceManager.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\Camera.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\openvr\Context.cpp">
+      <Filter>Source Files\cinder\vr\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\openvr\Controller.cpp">
+      <Filter>Source Files\cinder\vr\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\openvr\DeviceManager.cpp">
+      <Filter>Source Files\cinder\vr\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\openvr\Hmd.cpp">
+      <Filter>Source Files\cinder\vr\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\oculus\Context.cpp">
+      <Filter>Source Files\cinder\vr\oculus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\oculus\Controller.cpp">
+      <Filter>Source Files\cinder\vr\oculus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\oculus\DeviceManager.cpp">
+      <Filter>Source Files\cinder\vr\oculus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\oculus\Hmd.cpp">
+      <Filter>Source Files\cinder\vr\oculus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\openvr\OpenVr.cpp">
+      <Filter>Source Files\cinder\vr\openvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\oculus\Oculus.cpp">
+      <Filter>Source Files\cinder\vr\oculus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cinder\vr\SessionOptions.cpp">
+      <Filter>Source Files\cinder\vr</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

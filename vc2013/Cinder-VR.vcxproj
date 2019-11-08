@@ -64,6 +64,7 @@
     <ProjectGuid>{D650630A-84D1-4DC1-80E3-F8B1D0EE34DE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CinderVR</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -109,19 +110,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\lib\msw\$(PlatformTarget)\</OutDir>
-    <TargetName>cinder-vr-$(PlatformToolset)_d</TargetName>
+    <OutDir>..\lib\msw\$(PlatformTarget)\$(Configuration)\</OutDir>
+    <TargetName>cinder-vr-$(PlatformToolset)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>cinder-vr-$(PlatformToolset)_d</TargetName>
-    <OutDir>..\lib\msw\$(PlatformTarget)\</OutDir>
+    <TargetName>cinder-vr-$(PlatformToolset)</TargetName>
+    <OutDir>..\lib\msw\$(PlatformTarget)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\lib\msw\$(PlatformTarget)\</OutDir>
+    <OutDir>..\lib\msw\$(PlatformTarget)\$(Configuration)\</OutDir>
     <TargetName>cinder-vr-$(PlatformToolset)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\lib\msw\$(PlatformTarget)\</OutDir>
+    <OutDir>..\lib\msw\$(PlatformTarget)\$(Configuration)\</OutDir>
     <TargetName>cinder-vr-$(PlatformToolset)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

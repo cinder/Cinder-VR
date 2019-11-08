@@ -296,7 +296,7 @@ void Context::processTrackedDeviceEvents( const ::vr::VREvent_t &event )
 
 		if( ci::vr::Controller::TYPE_UNKNOWN != ctrlType ) {
 			::vr::VRControllerState_t state = {};
-			if( mVrSystem->GetControllerState( deviceIndex, &state ) && mViveControllers[ctrlType]->isEventsEnabled() ) {
+			if( mVrSystem->GetControllerState( deviceIndex, &state, sizeof( state ) ) && mViveControllers[ctrlType]->isEventsEnabled() ) {
 				mViveControllers[ctrlType]->processControllerState( state );
 			}
 		}

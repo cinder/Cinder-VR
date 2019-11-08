@@ -493,7 +493,7 @@ void TeleportBasicApp::draw()
 
 void prepareSettings( App::Settings *settings )
 {
-	settings->setTitle( "Cinder VR ControllerIntermediate" );
+	settings->setTitle( "Cinder VR TeleportBasic" );
 	settings->setWindowSize( 1920/2, 1080/2 );
 }
 
