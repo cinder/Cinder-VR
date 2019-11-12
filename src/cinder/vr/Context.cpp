@@ -52,9 +52,19 @@ namespace cinder { namespace vr {
 Context::Context( const ci::vr::SessionOptions& sessionOptions, ci::vr::DeviceManager* deviceManager )
 	: mSessionOptions( sessionOptions ), mDeviceManager( deviceManager )
 {
-	mControllerIconTextures[ci::vr::Controller::TYPE_LEFT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::TYPE_LEFT ) );
-	mControllerIconTextures[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Texture2d::create( getHandIcon( ci::vr::Controller::TYPE_RIGHT ) );
-
+	if (mSessionOptions.getHandIcon(ci::vr::Controller::TYPE_LEFT) != nullptr) {
+		mControllerIconTextures[ci::vr::Controller::TYPE_LEFT] = ci::gl::Texture2d::create(*mSessionOptions.getHandIcon(ci::vr::Controller::TYPE_LEFT));
+	}
+	else {
+		mControllerIconTextures[ci::vr::Controller::TYPE_LEFT] = ci::gl::Texture2d::create(getHandIcon(ci::vr::Controller::TYPE_LEFT));
+	}
+	if (mSessionOptions.getHandIcon(ci::vr::Controller::TYPE_RIGHT) != nullptr) {
+		mControllerIconTextures[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Texture2d::create(*mSessionOptions.getHandIcon(ci::vr::Controller::TYPE_RIGHT));
+	}
+	else {
+		mControllerIconTextures[ci::vr::Controller::TYPE_RIGHT] = ci::gl::Texture2d::create(getHandIcon(ci::vr::Controller::TYPE_RIGHT));
+	}
+	
 	if( mSessionOptions.getControllerConnected() ) {
 		mSignalControllerConnected.connect( mSessionOptions.getControllerConnected() );
 	}

@@ -847,10 +847,12 @@ void Hmd::drawControllers( ci::vr::Eye eye )
 				ci::gl::rotate( 0.11f, 1.0f, 0.0f, 0.0f );
 				ci::gl::scale( ci::vec3( 0.01f ) );
 				const auto& tex = mContext->getControllerIconTexture( ctrlType );
-				tex->bind( 0 );
-				mControllerIconBatch[ctrlType]->getGlslProg()->uniform( "uTex0", 0 );
-				mControllerIconBatch[ctrlType]->draw();
-				tex->unbind( 0 );
+				if (tex != nullptr) {
+					tex->bind( 0 );
+					mControllerIconBatch[ctrlType]->getGlslProg()->uniform( "uTex0", 0 );
+					mControllerIconBatch[ctrlType]->draw();
+					tex->unbind( 0 );
+				}
 			}
 		}
 	}

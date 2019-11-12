@@ -38,9 +38,12 @@
 
 #pragma once
 
+#include "cinder/vr/Controller.h"
 #include "cinder/vr/Platform.h"
+#include "cinder/Surface.h"
 
 #include <algorithm>
+#include <map>
 
 namespace cinder { namespace vr { 
 
@@ -92,6 +95,9 @@ public:
 	SessionOptions&									setControllerConnected( std::function<void(const ci::vr::Controller*)> value ) {  mControllerConnected = value; return *this; }
 	std::function<void(const ci::vr::Controller*)>	getControllerDisconnected() const { return mControllerDisconnected; }
 	SessionOptions&									setControllerDisconnected( std::function<void(const ci::vr::Controller*)> value ) {  mControllerDisconnected = value; return *this; }
+	
+	const ci::Surface8uRef				getHandIcon( ci::vr::Controller::Type type ) const;
+	SessionOptions&						setHandIcon( ci::vr::Controller::Type type, const ci::Surface8uRef& surf );
 private:
 	bool								mVerticalSync = false;
 	float								mFrameRate = 90.0f;
@@ -99,6 +105,8 @@ private:
 	ci::vr::TrackingOrigin				mTrackingOrigin = ci::vr::TRACKING_ORIGIN_DEVICE_DEFAULT;
 	ci::vr::OriginMode					mOriginMode = ci::vr::ORIGIN_MODE_HMD_ORIENTED;
 	ci::vec3							mOriginOffset = ci::vec3( 0, 0, -1 );
+
+	std::map<ci::vr::Controller::Type, ci::Surface8uRef>	mHandIcons;
 
 	uint32_t							mSampleCount = 1;
 	uint32_t							mMipLevels = 1;
