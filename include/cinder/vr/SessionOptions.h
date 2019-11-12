@@ -92,9 +92,6 @@ public:
 	SessionOptions&									setControllerConnected( std::function<void(const ci::vr::Controller*)> value ) {  mControllerConnected = value; return *this; }
 	std::function<void(const ci::vr::Controller*)>	getControllerDisconnected() const { return mControllerDisconnected; }
 	SessionOptions&									setControllerDisconnected( std::function<void(const ci::vr::Controller*)> value ) {  mControllerDisconnected = value; return *this; }
-
-	ci::ImageSourceRef					getHandIcon( ci::vr::Controller::Type hand ) const;
-	SessionOptions&						setHandIcon( ci::vr::Controller::Type hand, ci::ImageSourceRef image );
 private:
 	bool								mVerticalSync = false;
 	float								mFrameRate = 90.0f;
@@ -102,8 +99,6 @@ private:
 	ci::vr::TrackingOrigin				mTrackingOrigin = ci::vr::TRACKING_ORIGIN_DEVICE_DEFAULT;
 	ci::vr::OriginMode					mOriginMode = ci::vr::ORIGIN_MODE_HMD_ORIENTED;
 	ci::vec3							mOriginOffset = ci::vec3( 0, 0, -1 );
-
-	std::map<ci::vr::Controller::Type, ci::ImageSourceRef>	mHandIcons;
 
 	uint32_t							mSampleCount = 1;
 	uint32_t							mMipLevels = 1;

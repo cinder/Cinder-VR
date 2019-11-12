@@ -64,7 +64,7 @@
     <ProjectGuid>{D650630A-84D1-4DC1-80E3-F8B1D0EE34DE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CinderVR</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
