@@ -98,6 +98,7 @@ public:
 
 	const ci::vr::CameraEye&			getEyeCamera( ci::vr::Eye eye ) const;
 	ci::mat4							getEyeViewMatrix( ci::vr::Eye eye ) const;
+	ci::mat4							getEyePoseMatrix( ci::vr::Eye eye ) const;
 	ci::mat4							getEyeProjectionMatrix( ci::vr::Eye eye ) const;
 	ci::mat4							getEyeViewProjectionMatrix( ci::vr::Eye eye ) const;
 	virtual ci::Area					getEyeViewport( ci::vr::Eye eye ) const = 0;
@@ -153,6 +154,7 @@ protected:
 	std::vector<ci::vr::Eye>			mEyes;
 	ci::vr::CameraEye					mEyeCamera[ci::vr::EYE_COUNT];
 	ci::vr::CameraEye					mHmdCamera;
+	ci::mat4							mEyePoseMatrix[ci::vr::EYE_COUNT];
 
 	ci::mat4							mDeviceToTrackingMatrix;
 	ci::mat4							mTrackingToDeviceMatrix;

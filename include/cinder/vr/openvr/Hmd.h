@@ -121,7 +121,6 @@ private:
 	float								mFarClip = 100.0f;
 
 	ci::mat4							mEyeProjectionMatrix[ci::vr::EYE_COUNT];
-	ci::mat4							mEyePoseMatrix[ci::vr::EYE_COUNT];
 
 	ci::gl::FboRef						mRenderTargetLeft;
 	ci::gl::FboRef						mRenderTargetRight;
