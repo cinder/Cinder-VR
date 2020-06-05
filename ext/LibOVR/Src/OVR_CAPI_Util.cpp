@@ -238,7 +238,7 @@ OVR_PUBLIC_FUNCTION(ovrDetectResult) ovr_Detect(int timeoutMilliseconds) {
   result.IsOculusHMDConnected = ovrFalse;
   result.IsOculusServiceRunning = ovrFalse;
 
-#if !defined(OSX_UNIMPLEMENTED)
+#if defined(_WIN32)
   // Attempt to open the named event.
   HANDLE hServiceEvent = ::OpenEventW(SYNCHRONIZE, FALSE, OVR_HMD_CONNECTED_EVENT_NAME);
 

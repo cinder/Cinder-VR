@@ -281,6 +281,15 @@ typedef char ovrBool; ///< Boolean type
 #define ovrTrue 1 ///< ovrBool value of true.
 
 //-----------------------------------------------------------------------------------
+// ***** PFN_ovrVoidFunction
+//
+/// Defines a generic function pointer.
+///
+/// \see ovr_GetInstanceProcAddr
+///
+typedef void (*PFN_ovrVoidFunction)(void);
+
+//-----------------------------------------------------------------------------------
 // ***** Simple Math Structures
 
 /// A RGBA color with normalized float components.
@@ -408,6 +417,23 @@ typedef enum ovrTrackingCaps_ {
   ovrTrackingCap_Position = 0x0040, ///< Supports positional tracking.
   ovrTrackingCap_EnumSize = 0x7fffffff ///< \internal Force type int32_t.
 } ovrTrackingCaps;
+
+/// Defines the largest size for an extension name string, including the '\0' terminator.
+///
+/// \see ovrExtensionProperties
+///
+#define OVR_MAX_EXTENSION_NAME_SIZE 128
+
+/// Describes the properties of an API extension.
+///
+/// \see ovr_EnumerateInstanceExtensionProperties
+///
+typedef struct ovrExtensionProperties_ {
+  int extensionId; // One of enum ovrExtensions or a dynamic value.
+  char extensionName[OVR_MAX_EXTENSION_NAME_SIZE];
+  uint32_t extensionVersion; // OpenXR-like version. Version compatibility is identified by the
+                             // extension documentation.
+} ovrExtensionProperties;
 
 /// Optional extensions
 typedef enum ovrExtensions_ {
@@ -1481,8 +1507,6 @@ extern "C" {
 ///      -# Module directory (usually the same as the application directory,
 ///         but not if the module is a separate shared library).
 ///      -# Application directory
-///      -# Development directory (only if OVR_ENABLE_DEVELOPER_SEARCH is enabled,
-///         which is off by default).
 ///      -# Standard OS shared library search location(s) (OS-specific).
 ///
 /// \param params Specifies custom initialization options. May be NULL to indicate default options
@@ -1791,6 +1815,7 @@ ovr_IsExtensionSupported(
 ///
 OVR_PUBLIC_FUNCTION(ovrResult)
 ovr_EnableExtension(ovrSession session, ovrExtensions extension);
+
 
 //@}
 
