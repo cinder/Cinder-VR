@@ -103,6 +103,11 @@ ci::mat4 Hmd::getEyeViewMatrix( ci::vr::Eye eye ) const
 	return result;
 }
 
+ci::mat4 Hmd::getEyePoseMatrix(ci::vr::Eye eye) const
+{
+	return mEyePoseMatrix[ eye ];
+}
+
 ci::mat4 Hmd::getEyeProjectionMatrix( ci::vr::Eye eye ) const
 {
 	const ci::vr::CameraEye& cam = mEyeCamera[eye];

@@ -136,7 +136,7 @@ private:
 
 	::ovrEyeRenderDesc					mEyeRenderDesc[ovrEye_Count];
 	::ovrPosef							mEyeRenderPose[ovrEye_Count];
-	::ovrVector3f						mEyeViewOffset[ovrEye_Count];
+	::ovrPosef							mEyeViewPose[ovrEye_Count];
 	::ovrLayerEyeFov					mBaseLayer;
 
 	::ovrTextureSwapChain				mTextureSwapChain = nullptr;

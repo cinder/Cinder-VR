@@ -40,6 +40,18 @@
 
 namespace cinder { namespace vr {
 
+	const Surface8uRef SessionOptions::getHandIcon( Controller::Type type ) const
+	{
+		if ( mHandIcons.find( type ) != mHandIcons.end() ) {
+			return mHandIcons.at( type );
+		}
+		return nullptr;
+	}
 
+	SessionOptions& SessionOptions::setHandIcon( Controller::Type type, const Surface8uRef& surf )
+	{
+		mHandIcons[ type ] = surf;
+		return *this;
+	}
 
 }} // namespace cinder::vr

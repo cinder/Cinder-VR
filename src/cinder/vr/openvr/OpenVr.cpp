@@ -125,7 +125,7 @@ std::string getTrackedDeviceString( ::vr::IVRSystem* vrSystem, ::vr::TrackedDevi
 
 ci::mat4 getHmdEyeProjectionMatrix( ::vr::IVRSystem* vrSystem, ::vr::Hmd_Eye eye, float nearClip, float farClip )
 {
-	::vr::HmdMatrix44_t mat = vrSystem->GetProjectionMatrix( eye, nearClip, farClip, ::vr::API_OpenGL );
+	::vr::HmdMatrix44_t mat = vrSystem->GetProjectionMatrix( eye, nearClip, farClip );
 	return ci::vr::openvr::fromOpenVr( mat );
 }
 
